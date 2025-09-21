@@ -1,20 +1,29 @@
-@extends('components.menu')
+@vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/funciones.js'])
+<div class="mt-6 ml-6">
 
-@section('title', 'Inicia sesión')
+    <x-msj-alert />
 
-@section('content')
-    <div class="bg-white p-8 rounded-2xl shadow-lg text-center">
-        <h1 class="text-4xl font-bold text-blue-600 mb-4">
-            ¡Inicia sesión!
-        </h1>
-        <form action="">
-            <label for="">Correo electrónico</label>
-            <input type="email" name="email">
+    <form id="form-insertar" data-url="{{ route('iniciando') }}" class="space-y-4">
+        @csrf
 
-            <label for="">Contraseña</label>
-            <input type="password" name="password">
+        <h1 class="text-base font-medium">Iniciar sesión</h1>
 
-            <input type="button" value="Entrar">
-        </form>
-    </div>
-@endsection
+        <div>
+            <label for="email" class="block mb-1">Correo electrónico</label>
+            <input type="text" name="email" id="email" required class="border px-2 py-1 w-64">
+        </div>
+
+        <div>
+            <label for="password" class="block mb-1">Contraseña</label>
+            <input type="password" name="password" id="password" required class="border px-2 py-1 w-64">
+        </div>
+
+        <div>
+            <input type="submit" value="Ingresar"
+                class="bg-blue-600 text-white font-semibold px-6 py-2 rounded-md shadow-md
+                    hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400
+                    transition duration-200 cursor-pointer" />
+        </div>
+
+    </form>
+</div>
