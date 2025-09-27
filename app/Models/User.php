@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $primaryKey = 'pk_usuario';
 
@@ -26,7 +27,8 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'fk_tipo_user'
+        'fk_tipo_user',
+        'img_user',
     ];
 
     public function tipo_usuario(){

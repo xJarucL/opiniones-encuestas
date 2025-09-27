@@ -24,5 +24,16 @@ class UserSeeder extends Seeder
             'fk_tipo_user' => 1,
             'estatus' => true,
         ]);
+
+        User::create([
+            'nombres' => 'test',
+            'ap_paterno' => 'test',
+            'ap_materno' => 'test',
+            'username' => 'test',
+            'email' => 'test@example.com',
+            'password' => Hash::make('test'),
+            'fk_tipo_user' => 2,
+            'estatus' => true,
+        ]);
     }
 }
