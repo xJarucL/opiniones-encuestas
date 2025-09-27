@@ -23,7 +23,7 @@ class ForgotPasswordController extends Controller
             'g-recaptcha-response.required' => 'Debes completar el CAPTCHA.'
         ]);
 
-        $secret = "6Lf9ltYrAAAAAOldLhmKpqm-i6vHSx8DPSw4myjH";
+        $secret = "#";
         $response = $request->input('g-recaptcha-response');
 
         $captchaValidation = Http::asForm()->post("https://www.google.com/recaptcha/api/siteverify", [

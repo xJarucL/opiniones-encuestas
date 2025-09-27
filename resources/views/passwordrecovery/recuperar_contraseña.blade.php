@@ -37,7 +37,7 @@
             @endif
 
             <div class="flex justify-center">
-                <div class="g-recaptcha" data-sitekey="6Lf9ltYrAAAAAEVLBf6GEyIIE6pQTXa61RELzjIh"></div>
+                <div class="g-recaptcha" data-sitekey="#"></div>
             </div>
 
             <div>
