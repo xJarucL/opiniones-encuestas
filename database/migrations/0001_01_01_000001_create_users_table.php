@@ -15,15 +15,17 @@ return new class extends Migration
             $table->id('pk_usuario');
             $table->string('nombres');
             $table->string('ap_paterno');
-            $table->string('ap_materno');
+            $table->string('ap_materno')->nullable();
             $table->string('username');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->text('img_user')->nullable();
             $table->string('password');
             $table->unsignedBigInteger('fk_tipo_user')->nullable();
             $table->foreign('fk_tipo_user')->references('pk_tipo_user')->on('tipo_user');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
             $table->boolean('estatus')->default(true);
         });
 

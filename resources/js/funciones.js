@@ -4,12 +4,14 @@ $(document).ready(function () {
 
         let $form = $(this);
         let url = $form.data('url');
-        let formData = $form.serialize();
+        let formData = new FormData(this);
 
         $.ajax({
             url: url,
             method: 'POST',
             data: formData,
+            processData: false,
+            contentType: false,
             success: function (response) {
                 $('#mensaje')
                     .removeClass('error')
