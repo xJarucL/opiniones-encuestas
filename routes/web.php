@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Middleware\AdminMiddleware;
 
@@ -58,4 +59,13 @@ Route::middleware(['auth'])->group(function () {
     // Compañeros (accesible por cualquier usuario)
     Route::get('/usuarios/compañeros', [UserController::class, 'listarCompañeros'])->name('compañeros');
     Route::get('/usuarios/compañero/{id}', [UserController::class, 'mostrarCompañero'])->name('compañero.show');
+
+    Route::post('/usuarios/compañero/{id}/comentarios', [ComentarioController::class, 'store'])->name('comentarios.store');
+    Route::post('/comentarios/{comentario}/responder', [ComentarioController::class, 'reply'])->name('comentarios.reply');
+    Route::delete('/comentarios/{comentario}', [ComentarioController::class, 'destroy'])->name('comentarios.destroy');
+
+    Route::middleware('can:moderate-comments')->group(function () {
+        Route::patch('/comentarios/{comentario}/ocultar', [ComentarioController::class, 'hide'])->name('comentarios.hide');
+        Route::patch('/comentarios/{comentario}/mostrar', [ComentarioController::class, 'show'])->name('comentarios.show');
+    });
 });

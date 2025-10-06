@@ -35,3 +35,37 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+// sweetalert.js
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-swal-form]');
+    if (!btn) return;
+    e.preventDefault();
+
+    const formId = btn.getAttribute('data-target-form');
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const title = btn.getAttribute('data-swal-title') || '¿Estás seguro?';
+    const text = btn.getAttribute('data-swal-text') || 'Confirma esta acción.';
+    const icon = btn.getAttribute('data-swal-icon') || 'warning';
+    const confirmButton = btn.getAttribute('data-swal-confirm') || 'Sí';
+    const cancelButton = btn.getAttribute('data-swal-cancel') || 'Cancelar';
+
+    Swal.fire({
+        title: title,
+        text: text,
+        icon: icon,
+        showCancelButton: true,
+        confirmButtonColor: '#7C3AED',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: confirmButton,
+        cancelButtonText: cancelButton,
+        background: '#fff',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+});
+

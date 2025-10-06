@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Tipo_usuario;
+use App\Models\Comentario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -179,9 +180,15 @@ class UserController extends Controller
 
     public function perfil(){
         $usuario = auth()->user();
+        $comentarios = Comentario::with(['autor','respuestas.autor'])
+                ->where('fk_perfil_user', $usuario->pk_usuario)
+                ->whereIn('estatus', ['visible','oculto'])   
+                ->whereNull('fk_coment_respuesta')           
+                ->orderByDesc('fecha_creacion')
+                ->get();
 
-        return view('users.perfil', compact('usuario'));
-    }
+            return view('users.perfil', compact('usuario','comentarios'));
+        }
 
     public function listarCompañeros(){
         $usuarios = User::where('estatus', true)
@@ -193,8 +200,15 @@ class UserController extends Controller
 
     public function mostrarCompañero($id){
         $usuario = User::findOrFail($id);
+        $comentarios = \App\Models\Comentario::with(['autor','respuestas.autor'])
+            ->where('fk_perfil_user', $usuario->pk_usuario)
+            ->whereIn('estatus', ['visible','oculto'])
+            ->whereNull('fk_coment_respuesta')
+            ->orderByDesc('fecha_creacion')
+            ->get();
 
-        return view('users.perfil', compact('usuario'));
+        return view('users.perfil', compact('usuario', 'comentarios'));
+
     }
 
 }
