@@ -1,6 +1,7 @@
 @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/funciones.js', 'resources/js/sweetalerts.js'])
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="min-h-screen flex flex-col items-center justify-center bg-purple-800 p-6 space-y-6">
 
