@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\PresentacionController;
 
 // LOGIN (solo para invitados)
 Route::get('/', function () {
@@ -69,3 +70,9 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/comentarios/{comentario}/mostrar', [ComentarioController::class, 'show'])->name('comentarios.show');
     });
 });
+
+Route::get('/presentacion', [PresentacionController::class, 'index'])->name('presentacion');
+
+Route::get('/podio', [PresentacionController::class, 'podio'])->name('podio');
+
+Route::get('/resultados', [PresentacionController::class, 'resultados'])->name('resultados');
