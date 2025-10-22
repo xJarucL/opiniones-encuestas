@@ -94,7 +94,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware([AdminMiddleware::class])->prefix('usuarios')->group(function () {
         Route::get('/', [UserController::class, 'listaUsuarios'])->name('lista_usuarios');
         Route::put('/cambiar-tipo/{id}', [UserController::class, 'cambiarTipo'])->name('usuarios.cambiar-tipo');
-        Route::get('/registro', function () { return view('users.formulario'); })->name('usuarios.registro');
+        Route::get('/registro', function () {
+            return view('users.formulario');
+        })->name('usuarios.registro');
         Route::post('/guardar', [UserController::class, 'guardarUsuario'])->name('guardar.user');
         Route::delete('/delete/{id}', [UserController::class, 'eliminar'])->name('usuarios.eliminar');
         Route::post('/restaurar/{id}', [UserController::class, 'restaurar'])->name('usuarios.restaurar');
@@ -112,21 +114,16 @@ Route::middleware(['auth'])->group(function () {
         })->name('dashboard');
 
         // =====================================================
-        // GESTIÓN DE COMENTARIOS
+        // GESTIÓN DE COMENTARIOS (solo admin)
         // =====================================================
         Route::prefix('comentarios')->name('comentarios.')->group(function () {
-            // Listado de comentarios para moderación
             Route::get('/', [ComentarioController::class, 'listForAdmin'])->name('index');
-            
-            // Ocultar comentario (solo admin)
             Route::patch('/{comentario}/ocultar', [ComentarioController::class, 'hide'])->name('hide');
-            
-            // Mostrar comentario oculto (solo admin)
             Route::patch('/{comentario}/mostrar', [ComentarioController::class, 'showComment'])->name('show');
         });
 
         // =====================================================
-        // GESTIÓN DE ENCUESTAS
+        // GESTIÓN DE ENCUESTAS (solo admin)
         // =====================================================
         Route::prefix('encuestas')->name('encuestas.')->group(function () {
             Route::get('/', [EncuestaController::class, 'index'])->name('index');
