@@ -6,11 +6,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
+
+    protected $primaryKey = 'pk_usuario';
 
     /**
      * The attributes that are mass assignable.
@@ -18,10 +21,19 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'nombres',
+        'ap_paterno',
+        'ap_materno',
+        'username',
         'email',
         'password',
+        'fk_tipo_user',
+        'img_user',
     ];
+
+    public function tipo_usuario(){
+        return $this->belongsTo(Tipo_usuario::class, 'fk_tipo_user', 'pk_tipo_user');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
