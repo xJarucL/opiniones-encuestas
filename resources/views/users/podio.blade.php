@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Podio de Nominados</title>
-    @vite(['resources/css/podio.css'])
+    @vite(['resources/css/podio.css', 'resources/js/podio.js'])
 </head>
 <body>
     <div class="container">
@@ -15,15 +15,28 @@
         <!-- Base del podio -->
         <div class="podium-base"></div>
 
-        <!-- Pilares del podio -->
+        <!-- Tercer lugar -->
         <div class="podium-pillar pillar-3">
             <div class="pillar-number">3</div>
-            <div class="pillar-name">Ariel</div>
+            <div class="pillar-name">
+                @if($podio['tercero'])
+                    {{ $podio['tercero']->nombre }}
+                @else
+                    ---
+                @endif
+            </div>
         </div>
 
+        <!-- Primer lugar -->
         <div class="podium-pillar pillar-1">
             <div class="pillar-number">1</div>
-            <div class="pillar-name">Fernando</div>
+            <div class="pillar-name">
+                @if($podio['primero'])
+                    {{ $podio['primero']->nombre }}
+                @else
+                    ---
+                @endif
+            </div>
             <!-- Estrella -->
             <div class="star">
                 <svg viewBox="0 0 100 100" width="80" height="80">
@@ -33,9 +46,16 @@
             </div>
         </div>
 
+        <!-- Segundo lugar -->
         <div class="podium-pillar pillar-2">
             <div class="pillar-number">2</div>
-            <div class="pillar-name">Edi</div>
+            <div class="pillar-name">
+                @if($podio['segundo'])
+                    {{ $podio['segundo']->nombre }}
+                @else
+                    ---
+                @endif
+            </div>
         </div>
     </div>
 </body>

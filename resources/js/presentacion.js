@@ -7,7 +7,7 @@ setTimeout(() => {
     if (!hasOpened) {
         openEnvelope();
     }
-}, 2500);
+}, 2000);
 
 envelopeWrapper.addEventListener('click', () => {
     if (!hasOpened) {
@@ -22,5 +22,11 @@ function openEnvelope() {
     setTimeout(() => {
         envelopeWrapper.classList.add('exit');
         nomineesText.classList.add('show');
+
+        setTimeout(() => {
+            const pathArray = window.location.pathname.split('/');
+            const preguntaId = pathArray[pathArray.length - 1];
+            window.location.href = `/podio/${preguntaId}`;
+        }, 3500);
     }, 2000);
 }
