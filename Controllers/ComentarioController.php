@@ -10,18 +10,11 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ComentarioController extends Controller
 {
-<<<<<<< HEAD
     use AuthorizesRequests;
     
     /**
      * Crear un nuevo comentario en el perfil de un usuario
      */
-=======
-    
-    
-    use AuthorizesRequests;
-    
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     public function store(Request $r, $id)
     {
         $r->validate([
@@ -42,12 +35,9 @@ class ComentarioController extends Controller
         return back()->with('success', 'Comentario publicado correctamente.');
     }
 
-<<<<<<< HEAD
     /**
      * Responder a un comentario existente
      */
-=======
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     public function reply(Request $r, Comentario $comentario)
     {
         $r->validate(['contenido' => 'required|string|max:1000']);
@@ -64,12 +54,9 @@ class ComentarioController extends Controller
         return back()->with('success', 'Respuesta publicada correctamente.');
     }
 
-<<<<<<< HEAD
     /**
      * Eliminar un comentario (solo propietario o admin)
      */
-=======
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     public function destroy(Comentario $comentario)
     {
         $this->authorize('delete', $comentario);
@@ -78,17 +65,13 @@ class ComentarioController extends Controller
         return back()->with('success', 'Comentario eliminado.');
     }
 
-<<<<<<< HEAD
     /**
      * Ocultar un comentario (solo admin)
      */
-=======
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     public function hide(Comentario $comentario)
     {
         Gate::authorize('moderate-comments');
         $comentario->update(['estatus' => 'oculto']);
-<<<<<<< HEAD
         return back()->with('success', 'Comentario ocultado correctamente.');
     }
 
@@ -135,15 +118,3 @@ class ComentarioController extends Controller
         return back()->with('success', 'Comentario actualizado correctamente.');
     }
 }
-=======
-        return back()->with('success', 'Comentario oculto.');
-    }
-
-    public function show(Comentario $comentario)
-    {
-        Gate::authorize('moderate-comments');
-        $comentario->update(['estatus' => 'visible']);
-        return back()->with('success', 'Comentario visible.');
-    }
-}
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90

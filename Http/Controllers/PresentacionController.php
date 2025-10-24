@@ -8,31 +8,19 @@ class PresentacionController extends Controller
 {
     public function index()
     {
-<<<<<<< HEAD
         // Tu lógica para la vista de presentación
         return view('presentacion.index');
-=======
-        return view('users.presentacion');
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     }
 
     public function podio()
     {
-<<<<<<< HEAD
         // Tu lógica para el podio
         return view('presentacion.podio');
-=======
-        return view('users.podio');
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     }
 
     public function resultados()
     {
-<<<<<<< HEAD
         // Tu lógica para resultados
         return view('presentacion.resultados');
-=======
-        return view('users.resultados');
->>>>>>> 8a973229b19be6e721f08ee229379f47b2942e90
     }
 }
