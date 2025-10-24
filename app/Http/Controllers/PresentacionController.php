@@ -8,16 +8,19 @@ class PresentacionController extends Controller
 {
     public function index()
     {
-        return view('users.presentacion');
+        // Tu lógica para la vista de presentación
+        return view('presentacion.index');
     }
 
     public function podio()
     {
-        return view('users.podio');
+        // Tu lógica para el podio
+        return view('presentacion.podio');
     }
 
     public function resultados()
     {
-        return view('users.resultados');
+        // Tu lógica para resultados
+        return view('presentacion.resultados');
     }
 }
