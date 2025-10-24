@@ -18,7 +18,7 @@
 
         <div class="nominees-text" id="nomineesText">
             <div class="nominees-card">
-                <h1>Los nominados a<br>mejor programador<br>son ...........</h1>
+                <h1>Los nominados a<br>{{ $tituloEncuesta }}<br>son .....</h1>
             </div>
         </div>
 

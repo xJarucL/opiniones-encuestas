@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     animateBars();
 
-    // Botón repetir
+    // Botón repetir - Redirigir a presentación
     const repeatButton = document.querySelector('.repeat-button');
     if (repeatButton) {
         repeatButton.addEventListener('click', function() {
-            resetAnimation();
-            setTimeout(() => animateBars(), 100);
+            // Obtener el preguntaId del URL actual
+            const pathArray = window.location.pathname.split('/');
+            const preguntaId = pathArray[pathArray.length - 1];
+            
+            // Redirigir a la pantalla de presentación
+            window.location.href = `/presentacion/${preguntaId}`;
         });
     }
 });

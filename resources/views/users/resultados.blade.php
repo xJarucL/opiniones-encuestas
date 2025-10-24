@@ -3,81 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados - Mejor Programador</title>
+    <title>Resultados - {{ $tituloEncuesta }}</title>
     @vite(['resources/css/resultados.css', 'resources/js/resultados.js'])
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>El mejor en programación</h1>
-            <p class="participants">12 Participantes</p>
+            <h1>{{ $tituloEncuesta }}</h1>
+            <p class="participants">{{ $totalParticipantes }} Participantes</p>
+
+            <!-- Botón cerrar (X) -->
+            <a href="{{ route('inicio') }}" class="close-button">
+                <img src="{{ asset('img/close-icon.png') }}" alt="Cerrar">
+            </a>
         </div>
 
         <div class="results-list">
-            <!-- Primer lugar -->
-            <div class="result-row" data-position="1">
-                <div class="medal">
-                    <img src="{{ asset('img/trofeo.png') }}" alt="Trofeo">
-                </div>
-                <div class="bar-container">
-                    <div class="progress-bar" data-percentage="100">
-                        <span class="name">Jaruny</span>
+            @foreach($resultados as $index => $resultado)
+                <div class="result-row" data-position="{{ $index + 1 }}">
+                    <div class="medal">
+                        @if($index === 0)
+                            <!-- Primer lugar - Trofeo -->
+                            <img src="{{ asset('img/trofeo.png') }}" alt="Trofeo">
+                        @elseif($index === 1)
+                            <!-- Segundo lugar - Medalla plata -->
+                            <img src="{{ asset('img/medalla-plata.png') }}" alt="Medalla plata">
+                        @elseif($index === 2)
+                            <!-- Tercer lugar - Medalla bronce -->
+                            <img src="{{ asset('img/medalla-bronce.png') }}" alt="Medalla bronce">
+                        @else
+                            <!-- Del 4to en adelante - Número -->
+                            <span class="position-number">{{ $index + 1 }}</span>
+                        @endif
                     </div>
-                </div>
-                <div class="percentage">100%</div>
-            </div>
-
-            <!-- Segundo lugar -->
-            <div class="result-row" data-position="2">
-                <div class="medal">
-                    <img src="{{ asset('img/medalla-plata.png') }}" alt="Medalla plata">
-                </div>
-                <div class="bar-container">
-                    <div class="progress-bar" data-percentage="90">
-                        <span class="name">Maria</span>
+                    
+                    <div class="bar-container">
+                        <div class="progress-bar" data-percentage="{{ $resultado->porcentaje }}">
+                            <span class="name">{{ $resultado->nombre }}</span>
+                        </div>
                     </div>
+                    
+                    <div class="percentage">{{ $resultado->porcentaje }}%</div>
                 </div>
-                <div class="percentage">90%</div>
-            </div>
-
-            <!-- Tercer lugar -->
-            <div class="result-row" data-position="3">
-                <div class="medal">
-                    <img src="{{ asset('img/medalla-bronce.png') }}" alt="Medalla bronce">
-                </div>
-                <div class="bar-container">
-                    <div class="progress-bar" data-percentage="85">
-                        <span class="name">Edi</span>
-                    </div>
-                </div>
-                <div class="percentage">85%</div>
-            </div>
-
-            <!-- Cuarto lugar -->
-            <div class="result-row" data-position="4">
-                <div class="medal">
-                    <span class="position-number">4</span>
-                </div>
-                <div class="bar-container">
-                    <div class="progress-bar" data-percentage="60">
-                        <span class="name">José</span>
-                    </div>
-                </div>
-                <div class="percentage">60%</div>
-            </div>
-
-            <!-- Quinto lugar -->
-            <div class="result-row" data-position="5">
-                <div class="medal">
-                    <span class="position-number">5</span>
-                </div>
-                <div class="bar-container">
-                    <div class="progress-bar" data-percentage="45">
-                        <span class="name">Pablito</span>
-                    </div>
-                </div>
-                <div class="percentage">45%</div>
-            </div>
+            @endforeach
         </div>
 
         <!-- Botón repetir -->
