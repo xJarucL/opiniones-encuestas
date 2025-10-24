@@ -54,6 +54,7 @@ class PresentacionController extends Controller
 
     public function resultados($preguntaId)
     {
+
         // Obtener el título de la encuesta
         $encuesta = DB::select("
             SELECT e.titulo 

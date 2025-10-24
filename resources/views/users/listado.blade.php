@@ -1,3 +1,4 @@
+
 @extends('admin.admin-layout')
 
 @section('title', 'Usuarios Activos')
@@ -198,13 +199,6 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Footer con paginación -->
-        @if($usuarios->hasPages())
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
             {{ $usuarios->links() }}
         </div>
         @endif
@@ -261,3 +255,6 @@
     </div>
 
 @endsection
+
+
+

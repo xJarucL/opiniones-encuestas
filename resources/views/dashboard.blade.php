@@ -1,3 +1,4 @@
+
 @extends('admin.admin-layout') {{-- Extiende el layout administrativo que tiene la barra lateral --}}
 
 @section('title', 'Panel de Administración')
@@ -72,5 +73,3 @@
         </ul>
         
     </div>
-
-@endsection
