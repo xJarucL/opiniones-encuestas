@@ -39,9 +39,11 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])
 // ==========================================================
 // 2. RUTAS PÚBLICAS (Sin autenticación)
 // ==========================================================
-Route::get('/presentacion', [PresentacionController::class, 'index'])->name('presentacion');
-Route::get('/podio', [PresentacionController::class, 'podio'])->name('podio');
-Route::get('/resultados', [PresentacionController::class, 'resultados'])->name('resultados');
+Route::get('/presentacion/{preguntaId}', [PresentacionController::class, 'index'])->name('presentacion');
+// Mostrar los primeros 3 lugares del podio
+Route::get('/podio/{preguntaId}', [PresentacionController::class, 'podio'])->name('podio');
+Route::get('/resultados/{preguntaId}', [PresentacionController::class, 'resultados'])->name('resultados');
+
 
 // ==========================================================
 // 3. RUTAS ASEGURADAS (Middleware: auth)

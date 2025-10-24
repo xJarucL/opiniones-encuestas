@@ -9,8 +9,9 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/css/presentacion.css',
-                'resources/js/presentacion.css',
+                'resources/js/presentacion.js',
                 'resources/css/podio.css',
+                'resources/js/podio.js',
                 'resources/css/resultados.css',
                 'resources/js/resultados.js'
             ],
