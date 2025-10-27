@@ -9,8 +9,6 @@ class Pregunta extends Model
 {
     use HasFactory;
 
-    protected $table = 'preguntas';
-
     protected $fillable = [
         'encuesta_id',
         'texto',
@@ -18,19 +16,13 @@ class Pregunta extends Model
         'orden',
     ];
 
-    /**
-     * Relación con encuesta
-     */
     public function encuesta()
     {
-        return $this->belongsTo(Encuesta::class, 'encuesta_id');
+        return $this->belongsTo(Encuesta::class);
     }
 
-    /**
-     * Relación con respuestas
-     */
     public function respuestas()
     {
-        return $this->hasMany(Respuesta::class, 'pregunta_id');
+        return $this->hasMany(Respuesta::class);
     }
 }

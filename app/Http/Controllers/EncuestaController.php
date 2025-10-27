@@ -139,7 +139,7 @@ class EncuestaController extends Controller
 
         foreach ($request->preguntas as $index => $preguntaData) {
             Pregunta::create([
-                'encuesta_id' => $encuesta->id,
+                'fk_encuesta' => $encuesta->pk_encuesta, 
                 'texto' => $preguntaData['texto'],
                 'tipo' => $preguntaData['tipo'],
                 'orden' => $index,

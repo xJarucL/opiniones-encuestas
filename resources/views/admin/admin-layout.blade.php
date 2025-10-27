@@ -50,7 +50,7 @@
                     <a href="{{ route('admin.comentarios.index') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
                         Comentarios
                     </a>
-                    <a href="{{ route('lista_usuarios') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
+                    <a href="{{ route('usuarios.lista') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
                         Usuarios
                     </a>
                     <form action="{{ route('logout') }}" method="POST" class="inline">

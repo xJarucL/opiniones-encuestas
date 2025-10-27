@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('preguntas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('encuesta_id')->constrained('encuestas')->onDelete('cascade');
+            $table->foreignId('encuesta_id')->constrained('encuestas')->onDelete('cascade'); // ⬅️ Usa 'encuesta_id'
             $table->text('texto');
             $table->enum('tipo', ['multiple', 'text', 'rating'])->default('multiple');
             $table->integer('orden')->default(0);

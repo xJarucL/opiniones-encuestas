@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
+
 class UserController extends Controller
 {
     public function login(Request $request){
@@ -25,13 +26,19 @@ class UserController extends Controller
 
         $usuario = User::where('email', $request->email)->first();
 
-
         if ($usuario && Hash::check($request->password, $usuario->password)) {
             Auth::login($usuario);
 
+            // Redirigir según tipo de usuario
+            $ruta = match($usuario->fk_tipo_user) {
+                1 => route('admin.dashboard'),  // Administrador
+                2 => route('inicio'),           // Usuario normal
+                default => route('login'),
+            };
+
             return response()->json([
                 'mensaje' => '¡Inicio de sesión exitoso!',
-                'ruta' => route('inicio'),
+                'ruta' => $ruta,
                 'class' => 'success'
             ]);
 
@@ -41,6 +48,12 @@ class UserController extends Controller
                 'class' => 'error'
             ], 422);
         }
+    }
+
+    public function dashboard(){
+        // === CORREGIDO AQUÍ ===
+        $usuario = Auth::user(); 
+        return view('users.dashboard', compact('usuario'));
     }
 
     public function listaUsuarios(){
@@ -66,14 +79,14 @@ class UserController extends Controller
         $usuario = User::findOrFail($id);
         $usuario->delete();
 
-        return redirect()->route('lista_usuarios')->with('success', 'Usuario eliminado correctamente.');
+        return redirect()->route('usuarios.lista')->with('success', 'Usuario eliminado correctamente.');      
     }
 
     public function restaurar($id){
         $usuario = User::withTrashed()->findOrFail($id);
         $usuario->restore();
 
-        return redirect()->route('lista_usuarios_inactivos')->with('success', 'Usuario restaurado correctamente.');
+        return redirect()->route('usuarios.inactivos')->with('success', 'Usuario restaurado correctamente.');
     }
 
     public function listaUsuarios_inactivos(){
@@ -83,89 +96,69 @@ class UserController extends Controller
         return view('users.listado', compact('usuarios', 'tipos_usuario'));
     }
 
-    public function guardarUsuario(Request $request){
-        $isEdit = $request->filled('id');
+public function guardarUsuario(Request $request){
+    $isEdit = $request->filled('id');
 
-        $emailRule = $isEdit
-            ? 'required|email|unique:users,email,' . $request->id . ',pk_usuario'
-            : 'required|email|unique:users,email';
+    $emailRule = $isEdit
+        ? 'required|email|unique:users,email,' . $request->id . ',pk_usuario'
+        : 'required|email|unique:users,email';
 
-        $reglas = [
-            'username'   => 'required|string|max:255',
-            'nombres'    => 'required|string|max:255',
-            'ap_paterno' => 'required|string|max:255',
-            'ap_materno' => 'nullable|string|max:255',
-            'email'      => $emailRule,
-            'img_user'   => 'nullable|image|max:2048',
-        ];
+    $reglas = [
+        'username'   => 'required|string|max:255',
+        'nombres'    => 'required|string|max:255',
+        'ap_paterno' => 'required|string|max:255',
+        'ap_materno' => 'nullable|string|max:255',
+        'email'      => $emailRule,
+        'img_user'   => 'nullable|image|max:2048',
+    ];
 
-        if (!$isEdit || $request->filled('password')) {
-            $reglas['password'] = 'required|string|min:6';
-        }
-
-        $validator = Validator::make($request->all(), $reglas, [
-            'username.required'   => 'El nombre de usuario es obligatorio.',
-            'nombres.required'    => 'Los nombres son obligatorios.',
-            'ap_paterno.required' => 'El apellido paterno es obligatorio.',
-            'email.required'      => 'El correo es obligatorio.',
-            'email.unique'        => 'El correo ya está en uso.',
-            'email.email'         => 'El correo debe tener un formato válido.',
-            'password.required'   => 'La contraseña es obligatoria.',
-            'password.min'        => 'La contraseña debe tener mínimo 6 caracteres.',
-            'img_user.image'      => 'El archivo debe ser una imagen.',
-            'img_user.max'        => 'La imagen no debe superar los 2MB.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'mensaje' => $validator->errors(),
-                'class'   => 'error'
-            ], 422);
-        }
-
-        $usuario = $isEdit
-            ? User::findOrFail($request->id)
-            : new User();
-
-        $usuario->username   = $request->username;
-        $usuario->nombres    = $request->nombres;
-        $usuario->ap_paterno = $request->ap_paterno;
-        $usuario->ap_materno = $request->ap_materno;
-        $usuario->email      = $request->email;
-
-        if ($request->filled('password')) {
-            $usuario->password = Hash::make($request->password);
-        }
-
-        if ($request->hasFile('img_user')) {
-            if ($isEdit && $usuario->img_user && Storage::disk('public')->exists($usuario->img_user)) {
-                Storage::disk('public')->delete($usuario->img_user);
-            }
-
-            $file = $request->file('img_user');
-            $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('usuarios', $filename, 'public');
-            $usuario->img_user = $path;
-        }
-
-        if (!$isEdit) {
-            $usuario->remember_token = Str::random(10);
-            $usuario->fk_tipo_user = 2;
-        }
-
-        $usuario->save();
-
-        return response()->json([
-            'mensaje' => $isEdit ? 'Usuario editado correctamente.' : 'Registro guardado correctamente.',
-            'ruta'    => route('lista_usuarios'),
-            'class'   => 'success'
-        ]);
+    if (!$isEdit || $request->filled('password')) {
+        $reglas['password'] = 'required|string|min:6';
     }
 
-    public function edit($id){
-        $usuario = User::findOrFail($id);
-        return view('users.formulario', compact('usuario'));
+    $request->validate($reglas);
+
+    $usuario = $isEdit
+        ? User::findOrFail($request->id)
+        : new User();
+
+    $usuario->username   = $request->username;
+    $usuario->nombres    = $request->nombres;
+    $usuario->ap_paterno = $request->ap_paterno;
+    $usuario->ap_materno = $request->ap_materno;
+    $usuario->email      = $request->email;
+
+    if ($request->filled('password')) {
+        $usuario->password = Hash::make($request->password);
     }
+
+    if ($request->hasFile('img_user')) {
+        if ($isEdit && $usuario->img_user && Storage::disk('public')->exists($usuario->img_user)) {
+            Storage::disk('public')->delete($usuario->img_user);
+        }
+
+        $file = $request->file('img_user');
+        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('usuarios', $filename, 'public');
+        $usuario->img_user = $path;
+    }
+
+    if (!$isEdit) {
+        $usuario->remember_token = Str::random(10);
+        $usuario->fk_tipo_user = 2;
+    }
+
+    $usuario->save();
+
+    return redirect()->route('usuarios.lista')->with('success', $isEdit ? 'Usuario actualizado correctamente.' : 'Usuario registrado correctamente.');
+}
+    
+
+        public function edit($id){
+            $usuario = User::findOrFail($id);
+            $tipos_usuario = Tipo_usuario::all();
+            return view('users.formulario', compact('usuario', 'tipos_usuario'));
+}
 
     public function logout(Request $request){
         $username = Auth::user() ? Auth::user()->username : 'Usuario no autenticado';
@@ -178,37 +171,61 @@ class UserController extends Controller
         return redirect()->route('login')->with('success', 'Cerraste sesión correctamente.');
     }
 
+    /**
+     * MUESTRA EL PERFIL DEL USUARIO AUTENTICADO
+     * ======================================================
+     * CAMBIO: Se usa el método privado _getPerfilData
+     */
     public function perfil(){
-        $usuario = auth()->user();
-        $comentarios = Comentario::with(['autor','respuestas.autor'])
-                ->where('fk_perfil_user', $usuario->pk_usuario)
-                ->whereIn('estatus', ['visible','oculto'])   
-                ->whereNull('fk_coment_respuesta')           
-                ->orderByDesc('fecha_creacion')
-                ->get();
-
-            return view('users.perfil', compact('usuario','comentarios'));
-        }
+        // === CORREGIDO AQUÍ ===
+        $usuario = Auth::user();
+        $data = $this->_getPerfilData($usuario);
+        
+        return view('users.perfil', $data);    
+    }
 
     public function listarCompañeros(){
         $usuarios = User::where('estatus', true)
-                        ->where('fk_tipo_user', 2)
-                        ->get();
+                            ->where('fk_tipo_user', 2)
+                            ->get();
 
         return view('users.compañeros', compact('usuarios'));
     }
 
+
+
+    /**
+     * MUESTRA EL PERFIL DE OTRO USUARIO (COMPAÑERO)
+     * ======================================================
+     * CAMBIO: Se usa el método privado _getPerfilData
+     */
     public function mostrarCompañero($id){
         $usuario = User::findOrFail($id);
-        $comentarios = \App\Models\Comentario::with(['autor','respuestas.autor'])
+        $data = $this->_getPerfilData($usuario);
+
+        return view('users.perfil', $data);
+    }
+    
+
+    /**
+     * ======================================================
+     * NUEVO MÉTODO PRIVADO
+     * ======================================================
+     * Obtiene los datos de perfil y comentarios para un usuario específico.
+     * Esto evita duplicar la consulta en perfil() y mostrarCompañero().
+     */
+    private function _getPerfilData(User $usuario)
+    {
+        $comentarios = Comentario::with(['autor','respuestas.autor'])
             ->where('fk_perfil_user', $usuario->pk_usuario)
             ->whereIn('estatus', ['visible','oculto'])
             ->whereNull('fk_coment_respuesta')
             ->orderByDesc('fecha_creacion')
             ->get();
-
-        return view('users.perfil', compact('usuario', 'comentarios'));
-
+            
+        return [
+            'usuario' => $usuario,
+            'comentarios' => $comentarios
+        ];
     }
-
 }
