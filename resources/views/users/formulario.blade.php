@@ -16,7 +16,8 @@
 
         <!-- Formulario -->
         <form id="formUsuario" 
-              action="{{ isset($usuario) ? route('usuarios.update', $usuario->pk_usuario) : route('guardar.user') }}" 
+              {{-- ¡CAMBIO AQUÍ! Se usa el nombre de ruta correcto: 'usuarios.guardar' --}}
+              action="{{ isset($usuario) ? route('usuarios.update', $usuario->pk_usuario) : route('usuarios.guardar') }}" 
               method="POST" 
               enctype="multipart/form-data" 
               class="p-8 space-y-6">

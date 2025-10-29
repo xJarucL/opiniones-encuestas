@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,9 +11,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(TipoUsuarioSeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(EncuestaSeeder::class);
+        $this->call([
+            TipoUsuarioSeeder::class,
+            UserSeeder::class,
+        ]);
 
+        $this->command->info('');
+        $this->command->info('🎉 ¡Base de datos poblada exitosamente!');
+        $this->command->info('');
+        $this->command->info('📋 Credenciales de acceso:');
+        $this->command->info('');
+        $this->command->info('👤 ADMINISTRADOR:');
+        $this->command->info('   Email: admin@example.com');
+        $this->command->info('   Password: admin');
+        $this->command->info('');
+        $this->command->info('👥 USUARIO DE PRUEBA:');
+        $this->command->info('   Email: test@example.com');
+        $this->command->info('   Password: test');
+        $this->command->info('');
     }
 }

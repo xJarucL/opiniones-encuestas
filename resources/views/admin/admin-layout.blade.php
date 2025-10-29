@@ -6,6 +6,9 @@
     <title>@yield('title', 'Panel Administrativo')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- ¡CAMBIO AQUÍ! Añadido 'defer' --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         @keyframes fade-slide {
             from {
@@ -76,5 +79,13 @@
         </div>
     </footer>
     
+    {{-- AlpineJS cargado con defer --}}
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/anchor@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- Directiva para insertar scripts específicos --}}
+    @stack('scripts')
+
 </body>
 </html>
+

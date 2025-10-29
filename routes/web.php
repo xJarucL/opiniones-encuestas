@@ -146,28 +146,46 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     // ---- ADMINISTRACIÓN DE USUARIOS ----
+    // El prefijo 'usuarios' y el nombre 'usuarios.' ya están aplicados por el grupo
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
-        // La ruta de la lista de usuarios se llama: 'usuarios.lista'
+        
+        // GET /usuarios -> UserController@listaUsuarios (Nombre: usuarios.lista)
         Route::get('/', [UserController::class, 'listaUsuarios'])->name('lista');
-        // La ruta de la lista de inactivos se llama: 'usuarios.inactivos'
+        
+        // GET /usuarios/inactivos -> UserController@listaUsuarios_inactivos (Nombre: usuarios.inactivos)
         Route::get('/inactivos', [UserController::class, 'listaUsuarios_inactivos'])->name('inactivos');
         
+        // GET /usuarios/registro -> Muestra el formulario (Nombre: usuarios.registro)
         Route::get('/registro', function () {
-            return view('users.formulario');
+            // Pasamos null como usuario y los tipos para que el formulario sepa que es creación
+            $tipos_usuario = \App\Models\Tipo_usuario::all(); 
+            return view('users.formulario', ['usuario' => null, 'tipos_usuario' => $tipos_usuario]);
         })->name('registro');
+
+        // POST /usuarios/guardar -> UserController@guardarUsuario (Nombre: usuarios.guardar) - Para CREAR usuarios
+        Route::post('/guardar', [UserController::class, 'guardarUsuario'])->name('guardar');
         
-        // --- RUTAS MOVIDAS ---
-        // Route::get('/editar/{id}', [UserController::class, 'edit'])->name('edit'); // <-- MOVIDA
-        // Route::put('/actualizar/{id}', [UserController::class, 'guardarUsuario'])->name('update'); // <-- MOVIDA
+        // GET /usuarios/editar/{id} -> UserController@edit (Nombre: usuarios.edit) - MOVIDA AL GRUPO AUTH GENERAL
+        // Route::get('/editar/{id}', [UserController::class, 'edit'])->name('edit'); 
         
-        // Esta ruta (POST) es para crear nuevos usuarios, lo cual es solo de Admin
-        Route::post('/guardar', [UserController::class, 'guardarUsuario'])->name('guardar'); 
-        
-        // Estas rutas son solo de Admin
+        // PUT /usuarios/actualizar/{id} -> UserController@guardarUsuario (Nombre: usuarios.update) - MOVIDA AL GRUPO AUTH GENERAL
+        // Route::put('/actualizar/{id}', [UserController::class, 'guardarUsuario'])->name('update'); 
+
+        // PUT /usuarios/cambiar-tipo/{id} -> UserController@cambiarTipo (Nombre: usuarios.cambiar-tipo)
         Route::put('/cambiar-tipo/{id}', [UserController::class, 'cambiarTipo'])->name('cambiar-tipo');
+        
+        // DELETE /usuarios/eliminar/{id} -> UserController@eliminar (Nombre: usuarios.eliminar) - Desactivar (Soft Delete)
         Route::delete('/eliminar/{id}', [UserController::class, 'eliminar'])->name('eliminar');
-        Route::post('/restaurar/{id}', [UserController::class, 'restaurar'])->name('restaurar');
+        
+        // POST /usuarios/restaurar/{id} -> UserController@restaurar (Nombre: usuarios.restaurar) - Reactivar
+        // Usamos POST para restaurar, como lo tenías definido antes. PUT también sería válido.
+        Route::post('/restaurar/{id}', [UserController::class, 'restaurar'])->name('restaurar'); 
+        
+        // DELETE /usuarios/eliminar-permanente/{id} -> UserController@eliminarPermanente (Nombre: usuarios.eliminar-permanente)
+        Route::delete('/eliminar-permanente/{id}', [UserController::class, 'eliminarPermanente'])->name('eliminar-permanente');
+
     });
 });
 
 // La ruta de LOGOUT y DEBUG se movieron al grupo de 'auth' general
+
