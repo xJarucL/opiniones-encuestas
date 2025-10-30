@@ -15,7 +15,11 @@
     <p class="text-gray-600 mt-1">Análisis de respuestas y estadísticas</p>
 </div>
 
-<!-- Información de la Encuesta -->
+{{-- Alerta flotante global --}}
+<div class="mb-6 animate-fade-slide relative z-50" style="animation-delay: 0.1s;">
+    <x-msj-alert />
+</div>
+
 <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -41,7 +45,6 @@
     </div>
 </div>
 
-<!-- Métricas principales -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-blue-50 p-6 rounded-xl">
         <div class="flex items-center justify-between">
@@ -65,31 +68,10 @@
             </svg>
         </div>
     </div>
-    <div class="bg-purple-50 p-6 rounded-xl">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-purple-600 font-semibold mb-1">Promedio</p>
-                <p class="text-3xl font-bold text-purple-700">{{ number_format($promedioRespuestas, 1) }}</p>
-            </div>
-            <svg class="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
-        </div>
-    </div>
-    <div class="bg-orange-50 p-6 rounded-xl">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-orange-600 font-semibold mb-1">Última Respuesta</p>
-                <p class="text-lg font-bold text-orange-700">{{ $ultimaRespuesta ?? 'N/A' }}</p>
-            </div>
-            <svg class="w-10 h-10 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-        </div>
+
     </div>
 </div>
 
-<!-- Resultados por pregunta -->
 @foreach($encuesta->preguntas as $pregunta)
 <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
     <h3 class="text-xl font-bold text-gray-800 mb-4">{{ $pregunta->texto }}</h3>
@@ -104,7 +86,6 @@
     </p>
 
     @if($pregunta->tipo == 'multiple' || $pregunta->tipo == 'rating')
-        <!-- Gráfico de barras -->
         <div class="space-y-3">
             @php
                 $respuestas = $pregunta->respuestas->groupBy('respuesta')->map->count();
@@ -132,7 +113,6 @@
             @endif
         </div>
     @else
-        <!-- Respuestas de texto -->
         <div class="space-y-3 max-h-96 overflow-y-auto">
             @forelse($pregunta->respuestas as $respuesta)
             <div class="bg-gray-50 p-4 rounded-lg">
@@ -149,4 +129,84 @@
 </div>
 @endforeach
 
-@endsection 
+@endsection
+
+@section('styles')
+<style>
+    #mensaje {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100%);
+        z-index: 9999;
+        min-width: 250px;
+        max-width: 90%;
+        text-align: center;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        opacity: 0;
+        animation: slideDown 0.5s forwards;
+    }
+
+    .success {
+        background-color: #16a34a; /* green-600 */
+    }
+    .error {
+        background-color: #dc2626; /* red-600 */
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+        }
+    }
+</style>
+@endsection
+
+@section('scripts')
+@if (session('success') || session('error'))
+    <div id="mensaje" class="{{ session('success') ? 'success' : 'error' }}">
+        {{ session('success') ?? session('error') }}
+    </div>
+@else
+    <div id="mensaje" class="hidden"></div>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mensaje = document.getElementById('mensaje');
+    
+    if (mensaje && !mensaje.classList.contains('hidden') && (mensaje.textContent.trim().length > 0)) {
+        setTimeout(() => {
+            mensaje.style.animation = 'slideUp 0.5s forwards';
+            setTimeout(() => {
+                mensaje.style.display = 'none';
+                mensaje.classList.add('hidden');
+            }, 500);
+        }, 4000);
+    } else {
+        if (mensaje) mensaje.style.display = 'none';
+    }
+});
+</script>
+@endsection

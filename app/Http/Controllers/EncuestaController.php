@@ -6,6 +6,7 @@ use App\Models\Encuesta;
 use App\Models\Categoria;
 use App\Models\Pregunta;
 use Illuminate\Http\Request;
+use Carbon\Carbon; // Necesario para trabajar con fechas
 
 class EncuestaController extends Controller
 {
@@ -19,7 +20,7 @@ class EncuestaController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $totalRespuestas = 0; // Aquí puedes calcular el total si tienes tabla de respuestas
+        $totalRespuestas = 0; 
         $totalCategorias = Categoria::count();
 
         return view('admin.encuestas.index', compact('encuestas', 'totalRespuestas', 'totalCategorias'));
@@ -43,15 +44,22 @@ class EncuestaController extends Controller
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'categoria_id' => 'required|exists:categorias,id',
+            
             'preguntas' => 'required|array|min:1',
             'preguntas.*.texto' => 'required|string',
-            'preguntas.*.tipo' => 'required|in:multiple,text,rating',
+            'preguntas.*.tipo' => 'required|in:multiple', // Solo permitimos 'multiple' ahora
+            'preguntas.*.opciones' => 'required|array|min:2', // Debe haber al menos 2 opciones
+            'preguntas.*.opciones.*' => 'required|string|max:255', // Cada opción debe ser string
+            
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
         ], [
             'titulo.required' => 'El título es obligatorio',
             'categoria_id.required' => 'Debes seleccionar una categoría',
-            'categoria_id.exists' => 'La categoría seleccionada no existe',
             'preguntas.required' => 'Debes agregar al menos una pregunta',
             'preguntas.*.texto.required' => 'El texto de la pregunta es obligatorio',
+            'preguntas.*.opciones.min' => 'Cada pregunta debe tener al menos dos opciones de respuesta.',
+            'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio.',
         ]);
 
         // Crear la encuesta
@@ -59,7 +67,9 @@ class EncuestaController extends Controller
             'titulo' => $request->titulo,
             'descripcion' => $request->descripcion,
             'categoria_id' => $request->categoria_id,
-            'estado' => $request->has('estado') ? 1 : 0,
+            'estado' => 1, // Por defecto ACTIVA
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin' => $request->fecha_fin,
         ]);
 
         // Crear las preguntas
@@ -67,8 +77,10 @@ class EncuestaController extends Controller
             Pregunta::create([
                 'encuesta_id' => $encuesta->id,
                 'texto' => $preguntaData['texto'],
-                'tipo' => $preguntaData['tipo'],
+                'tipo' => 'multiple', // Forzamos el tipo a 'multiple'
                 'orden' => $index,
+                // GUARDA LAS OPCIONES COMO JSON
+                'opciones' => json_encode($preguntaData['opciones']), 
             ]);
         }
 
@@ -105,7 +117,18 @@ class EncuestaController extends Controller
      */
     public function edit($id)
     {
+        // Se añade 'opciones' al modelo Pregunta si existe el campo JSON, 
+        // y se decodifica para pasarlo a la vista si es necesario.
         $encuesta = Encuesta::with('preguntas')->findOrFail($id);
+        
+        // Decodificar el JSON de opciones para que la vista pueda iterar
+        if ($encuesta->preguntas->isNotEmpty()) {
+            foreach ($encuesta->preguntas as $pregunta) {
+                // Asumimos que el campo se llama 'opciones' y contiene un JSON string
+                $pregunta->opciones_array = json_decode($pregunta->opciones, true) ?? [];
+            }
+        }
+        
         $categorias = Categoria::all();
         return view('admin.encuestas.create', compact('encuesta', 'categorias'));
     }
@@ -121,9 +144,15 @@ class EncuestaController extends Controller
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'categoria_id' => 'required|exists:categorias,id',
+            
             'preguntas' => 'required|array|min:1',
             'preguntas.*.texto' => 'required|string',
-            'preguntas.*.tipo' => 'required|in:multiple,text,rating',
+            'preguntas.*.tipo' => 'required|in:multiple', // Solo permitimos 'multiple' ahora
+            'preguntas.*.opciones' => 'required|array|min:2', // Debe haber al menos 2 opciones
+            'preguntas.*.opciones.*' => 'required|string|max:255',
+            
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
         ]);
 
         // Actualizar encuesta
@@ -131,7 +160,8 @@ class EncuestaController extends Controller
             'titulo' => $request->titulo,
             'descripcion' => $request->descripcion,
             'categoria_id' => $request->categoria_id,
-            'estado' => $request->has('estado') ? 1 : 0,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin' => $request->fecha_fin,
         ]);
 
         // Eliminar preguntas antiguas y crear nuevas
@@ -139,10 +169,12 @@ class EncuestaController extends Controller
 
         foreach ($request->preguntas as $index => $preguntaData) {
             Pregunta::create([
-                'fk_encuesta' => $encuesta->pk_encuesta, 
+                'encuesta_id' => $encuesta->id, 
                 'texto' => $preguntaData['texto'],
-                'tipo' => $preguntaData['tipo'],
+                'tipo' => 'multiple', // Forzamos el tipo a 'multiple'
                 'orden' => $index,
+                // GUARDA LAS OPCIONES COMO JSON
+                'opciones' => json_encode($preguntaData['opciones']),
             ]);
         }
 
@@ -171,7 +203,7 @@ class EncuestaController extends Controller
         $encuesta->estado = !$encuesta->estado;
         $encuesta->save();
 
-        $mensaje = $encuesta->estado ? 'Encuesta activada' : 'Encuesta desactivada';
+        $mensaje = $encuesta->estado ? 'Encuesta activada manualmente' : 'Encuesta desactivada manualmente';
 
         return redirect()->route('admin.encuestas.index')
             ->with('success', $mensaje);

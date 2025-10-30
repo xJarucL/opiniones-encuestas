@@ -4,6 +4,14 @@
 
 @section('content')
 
+<style>
+/* Estilo para el fondo del modal con efecto blur */
+.modal-backdrop {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+</style>
+
 <div class="mb-6">
     <div class="flex items-center justify-between">
         <div>
@@ -26,16 +34,10 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg mb-6 animate-fade-slide">
-        <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            {{ session('success') }}
-        </div>
-    </div>
-@endif
+{{-- Alerta del componente --}}
+<div class="mb-6">
+    <x-msj-alert />
+</div>
 
 @if($errors->any())
     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6">
@@ -77,17 +79,7 @@
             </svg>
         </div>
     </div>
-    <div class="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-pink-100 text-sm mb-1">Promedio por Categoría</p>
-                <p class="text-3xl font-bold">{{ $categorias->count() > 0 ? number_format($categorias->sum('encuestas_count') / $categorias->count(), 1) : 0 }}</p>
-            </div>
-            <svg class="w-10 h-10 text-pink-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
-        </div>
-    </div>
+
 </div>
 
 <!-- Grid de categorías -->
@@ -108,11 +100,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                 </button>
-                <form action="{{ route('admin.categorias.destroy', $categoria->id) }}" method="POST" 
-                      onsubmit="return confirm('¿Estás seguro de eliminar esta categoría? Las encuestas asociadas quedarán sin categoría.');" class="inline">
+                <form action="{{ route('admin.categorias.destroy', $categoria->id) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" 
+                    <button type="button" 
+                            data-swal-form
+                            data-swal-title="¿Eliminar Categoría?"
+                            data-swal-text="Esta acción eliminará la categoría. Las encuestas asociadas quedarán sin categoría."
+                            data-swal-icon="warning"
+                            data-swal-confirm="Sí, eliminar"
+                            data-swal-cancel="Cancelar"
+                            data-swal-color="#dc2626"
                             class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                             title="Eliminar">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,8 +154,8 @@
 </div>
 
 <!-- Modal para crear/editar categoría -->
-<div id="modalCategoria" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-slide">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full transform transition-all">
+<div id="modalCategoria" class="hidden fixed inset-0 bg-black/20 modal-backdrop flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full transform transition-all animate-fade-slide">
         <div class="bg-gradient-to-r from-purple-600 to-purple-700 p-6 rounded-t-xl">
             <div class="flex items-center justify-between text-white">
                 <h2 id="modalTitulo" class="text-2xl font-bold">Nueva Categoría</h2>
@@ -217,7 +215,11 @@
     </div>
 </div>
 
+@endsection
+
+@push('scripts')
 <script>
+// Funciones del Modal
 function abrirModal() {
     document.getElementById('modalCategoria').classList.remove('hidden');
     document.getElementById('modalTitulo').textContent = 'Nueva Categoría';
@@ -247,7 +249,7 @@ function editarCategoria(id, nombre, descripcion) {
 }
 
 // Cerrar modal al hacer clic fuera
-document.getElementById('modalCategoria').addEventListener('click', function(e) {
+document.getElementById('modalCategoria')?.addEventListener('click', function(e) {
     if (e.target === this) {
         cerrarModal();
     }
@@ -255,27 +257,33 @@ document.getElementById('modalCategoria').addEventListener('click', function(e) 
 
 // Cerrar modal con tecla ESC
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && !document.getElementById('modalCategoria').classList.contains('hidden')) {
         cerrarModal();
     }
 });
 
-// Contador de caracteres
-document.getElementById('nombre')?.addEventListener('input', function() {
-    const max = 255;
-    const current = this.value.length;
-    if (current > max) {
-        this.value = this.value.substring(0, max);
-    }
-});
-
-document.getElementById('descripcion')?.addEventListener('input', function() {
-    const max = 500;
-    const current = this.value.length;
-    if (current > max) {
-        this.value = this.value.substring(0, max);
+// SweetAlert2 para confirmación de eliminación
+document.addEventListener('click', function (e) {
+    const button = e.target.closest('[data-swal-form]');
+    if (button) {
+        e.preventDefault();
+        const form = button.closest('form');
+        
+        Swal.fire({
+            title: button.dataset.swalTitle || '¿Estás seguro?',
+            text: button.dataset.swalText || 'No podrás revertir esta acción.',
+            icon: button.dataset.swalIcon || 'warning',
+            showCancelButton: true,
+            confirmButtonColor: button.dataset.swalColor || '#dc2626',
+            cancelButtonColor: '#6e7881',
+            confirmButtonText: button.dataset.swalConfirm || 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
     }
 });
 </script>
-
-@endsection
+@endpush
