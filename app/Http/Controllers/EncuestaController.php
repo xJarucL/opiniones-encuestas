@@ -2,17 +2,62 @@
 
 namespace App\Http\Controllers;
 
+// Imports de tu controlador
 use App\Models\Encuesta;
 use App\Models\Categoria;
 use App\Models\Pregunta;
 use Illuminate\Http\Request;
-use Carbon\Carbon; // Necesario para trabajar con fechas
+use Carbon\Carbon;
+
+// Import añadido para 'Auth'
+use Illuminate\Support\Facades\Auth;
 
 class EncuestaController extends Controller
 {
     /**
-     * Mostrar lista de encuestas
-     */
+    * ==========================================================
+    * AÑADIDO: Constructor para proteger las rutas
+    * ==========================================================
+    */
+    public function __construct()
+    {
+        // Protege TODAS las rutas de este controlador
+        $this->middleware('auth'); 
+        
+        // Aplica el middleware 'admin' a todas las rutas EXCEPTO a la nueva
+        $this->middleware('admin')->except(['showPublicIndex']);
+    }
+
+    /**
+    * ==========================================================
+    * AÑADIDO: NUEVA FUNCIÓN PARA USUARIOS
+    * ==========================================================
+    */
+    public function showPublicIndex()
+    {
+        // Asumo que 'estado' == 1 es como marcas las encuestas visibles
+        $encuestas = Encuesta::where('estado', 1) // <-- CORREGIDO para usar 'estado'
+                            ->with('preguntas') // Carga las preguntas para saber si está vacía
+                            ->latest()
+                            ->paginate(10);
+                            
+        // ==========================================================
+        // ¡LA CORRECCIÓN ESTÁ AQUÍ!
+        // Apuntamos a 'encuestas' (tu archivo) en lugar de 'encuestas.public-index'
+        // ==========================================================
+        return view('encuestas', [
+            'encuestas' => $encuestas,
+            'usuario' => Auth::user() // Pasa el usuario al layout 'components.menu'
+        ]);
+    }
+
+    // ==========================================================
+    // FUNCIONES DE ADMINISTRADOR (Tu código original)
+    // ==========================================================
+
+    /**
+    * Mostrar lista de encuestas
+    */
     public function index()
     {
         $encuestas = Encuesta::with('categoria')
@@ -27,8 +72,8 @@ class EncuestaController extends Controller
     }
 
     /**
-     * Mostrar formulario de creación
-     */
+    * Mostrar formulario de creación
+    */
     public function create()
     {
         $categorias = Categoria::all();
@@ -36,8 +81,8 @@ class EncuestaController extends Controller
     }
 
     /**
-     * Guardar nueva encuesta
-     */
+    * Guardar nueva encuesta
+    */
     public function store(Request $request)
     {
         $request->validate([
@@ -89,8 +134,8 @@ class EncuestaController extends Controller
     }
 
     /**
-     * Mostrar resultados de una encuesta
-     */
+    * Mostrar resultados de una encuesta
+    */
     public function show($id)
     {
         $encuesta = Encuesta::with(['categoria', 'preguntas.respuestas'])->findOrFail($id);
@@ -106,21 +151,25 @@ class EncuestaController extends Controller
         
         $ultimaRespuesta = null;
         if ($totalRespuestas > 0) {
-            $ultimaRespuesta = $encuesta->preguntas->first()->respuestas->first()->created_at->format('d/m/Y');
+            // Pequeña corrección: Asegurarse de que existan respuestas antes de acceder
+            $primeraPreguntaConRespuesta = $encuesta->preguntas->first(function($p) { return $p->respuestas->isNotEmpty(); });
+            if ($primeraPreguntaConRespuesta) {
+                $ultimaRespuesta = $primeraPreguntaConRespuesta->respuestas->sortByDesc('created_at')->first()->created_at->format('d/m/Y');
+            }
         }
 
         return view('admin.encuestas.show', compact('encuesta', 'totalRespuestas', 'promedioRespuestas', 'ultimaRespuesta'));
     }
 
     /**
-     * Mostrar formulario de edición
-     */
+    * Mostrar formulario de edición
+    */
     public function edit($id)
     {
         // Se añade 'opciones' al modelo Pregunta si existe el campo JSON, 
         // y se decodifica para pasarlo a la vista si es necesario.
         $encuesta = Encuesta::with('preguntas')->findOrFail($id);
-        
+    
         // Decodificar el JSON de opciones para que la vista pueda iterar
         if ($encuesta->preguntas->isNotEmpty()) {
             foreach ($encuesta->preguntas as $pregunta) {
@@ -128,14 +177,15 @@ class EncuestaController extends Controller
                 $pregunta->opciones_array = json_decode($pregunta->opciones, true) ?? [];
             }
         }
+        // <<<--- ¡AQUÍ ESTABA LA LLAVE "}" EXTRA! (Ha sido eliminada)
         
         $categorias = Categoria::all();
         return view('admin.encuestas.create', compact('encuesta', 'categorias'));
     }
 
     /**
-     * Actualizar encuesta
-     */
+    * Actualizar encuesta
+    */
     public function update(Request $request, $id)
     {
         $encuesta = Encuesta::findOrFail($id);
@@ -183,8 +233,8 @@ class EncuestaController extends Controller
     }
 
     /**
-     * Eliminar encuesta
-     */
+    * Eliminar encuesta
+    */
     public function destroy($id)
     {
         $encuesta = Encuesta::findOrFail($id);
@@ -195,8 +245,8 @@ class EncuestaController extends Controller
     }
 
     /**
-     * Cambiar estado de encuesta (activa/inactiva)
-     */
+    * Cambiar estado de encuesta (activa/inactiva)
+    */
     public function cambiarEstado($id)
     {
         $encuesta = Encuesta::findOrFail($id);
@@ -209,3 +259,4 @@ class EncuestaController extends Controller
             ->with('success', $mensaje);
     }
 }
+

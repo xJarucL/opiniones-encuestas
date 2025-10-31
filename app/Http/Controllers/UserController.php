@@ -146,7 +146,7 @@ class UserController extends Controller
     public function cambiarTipo(Request $request, $id){
         $request->validate([
              // Asegúrate que la tabla se llama 'tipo_usuarios' o ajústalo
-            'fk_tipo_user' => 'required|exists:tipo_usuarios,pk_tipo_user',
+            'fk_tipo_user' => 'required|exists:tipo_user,pk_tipo_user',
         ]);
 
         // Usamos withTrashed para poder cambiar el tipo incluso a usuarios inactivos

@@ -6,7 +6,7 @@
     <title>@yield('title', 'Opiniones y Encuestas')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/funciones.js', 'resources/js/sweetalert.js'])
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50">
 
@@ -64,5 +64,44 @@
 
     @stack('scripts')
 
+    {{-- ====================================================== --}}
+    {{-- SCRIPT DE SWEETALERT AÑADIDO (CORREGIDO) --}}
+    {{-- ====================================================== --}}
+    
+    {{-- Alerta para cuando se completa una encuesta --}}
+    @if (session('survey_completed'))
+        <script>
+            // No se necesita DOMContentLoaded porque el script está al final del body
+            Swal.fire({
+                title: '¡Gracias por participar!',
+                text: "{{ session('survey_completed') }}",
+                icon: 'success',
+                timer: 3500,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
+        </script>
+    @endif
+
+    {{-- Alerta genérica para mensajes de éxito (ej. editar perfil) --}}
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                title: '¡Éxito!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        </script>
+    @endif
+    {{-- ====================================================== --}}
+    {{-- FIN SCRIPT DE SWEETALERT --}}
+    {{-- ====================================================== --}}
+
 </body>
 </html>
+

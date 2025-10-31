@@ -42,6 +42,14 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])
 // 2. RUTAS PÚBLICAS (Sin autenticación)
 // ==========================================================
 Route::get('/presentacion/{preguntaId}', [PresentacionController::class, 'index'])->name('presentacion');
+
+// ==========================================================
+// ¡AÑADE ESTA LÍNEA!
+// Esta es la ruta POST para guardar el voto
+// ==========================================================
+Route::post('/presentacion/store', [PresentacionController::class, 'store'])->name('presentacion.store');
+
+
 Route::get('/podio/{preguntaId}', [PresentacionController::class, 'podio'])->name('podio');
 Route::get('/resultados/{preguntaId}', [PresentacionController::class, 'resultados'])->name('resultados');
 
@@ -55,11 +63,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     
     // EDICIÓN DE PERFIL (Movidas desde el grupo de Admin)
-    // Ahora cualquier usuario autenticado puede editar su propio perfil.
     Route::get('/usuarios/editar/{id}', [UserController::class, 'edit'])->name('usuarios.edit');
     Route::put('/usuarios/actualizar/{id}', [UserController::class, 'guardarUsuario'])->name('usuarios.update');
 
-    // RUTA DE DEBUG (la tenías al final)
+    // RUTA DE DEBUG
     Route::get('/debug-user', function () {
         if (Auth::check()) {
             $user = Auth::user();
@@ -97,6 +104,9 @@ Route::middleware(['auth', 'usuario'])->group(function () {
     Route::get('/usuarios/compañeros', [UserController::class, 'listarCompañeros'])->name('compañeros');
     Route::get('/usuarios/compañero/{id}', [UserController::class, 'mostrarCompañero'])->name('compañero.show');
 
+    // RUTA DE ENCUESTAS PARA USUARIOS
+    Route::get('/encuestas', [EncuestaController::class, 'showPublicIndex'])->name('encuestas.index');
+
     // COMENTARIOS
     Route::prefix('comentarios')->group(function () {
         Route::post('/usuarios/compañero/{id}/comentarios', [ComentarioController::class, 'store'])->name('comentarios.store');
@@ -122,6 +132,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
             Route::get('/', [ComentarioController::class, 'index'])->name('index');
             Route::patch('/{comentario}/ocultar', [ComentarioController::class, 'hide'])->name('hide');
             Route::patch('/{comentario}/mostrar', [ComentarioController::class, 'showComment'])->name('show');
+            Route::delete('/{comentario}', [ComentarioController::class, 'destroyAdmin'])->name('destroy');
         });
 
         // GESTIÓN DE ENCUESTAS
@@ -146,46 +157,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     // ---- ADMINISTRACIÓN DE USUARIOS ----
-    // El prefijo 'usuarios' y el nombre 'usuarios.' ya están aplicados por el grupo
     Route::prefix('usuarios')->name('usuarios.')->group(function () {
         
-        // GET /usuarios -> UserController@listaUsuarios (Nombre: usuarios.lista)
         Route::get('/', [UserController::class, 'listaUsuarios'])->name('lista');
-        
-        // GET /usuarios/inactivos -> UserController@listaUsuarios_inactivos (Nombre: usuarios.inactivos)
         Route::get('/inactivos', [UserController::class, 'listaUsuarios_inactivos'])->name('inactivos');
         
-        // GET /usuarios/registro -> Muestra el formulario (Nombre: usuarios.registro)
         Route::get('/registro', function () {
-            // Pasamos null como usuario y los tipos para que el formulario sepa que es creación
             $tipos_usuario = \App\Models\Tipo_usuario::all(); 
             return view('users.formulario', ['usuario' => null, 'tipos_usuario' => $tipos_usuario]);
         })->name('registro');
 
-        // POST /usuarios/guardar -> UserController@guardarUsuario (Nombre: usuarios.guardar) - Para CREAR usuarios
         Route::post('/guardar', [UserController::class, 'guardarUsuario'])->name('guardar');
-        
-        // GET /usuarios/editar/{id} -> UserController@edit (Nombre: usuarios.edit) - MOVIDA AL GRUPO AUTH GENERAL
-        // Route::get('/editar/{id}', [UserController::class, 'edit'])->name('edit'); 
-        
-        // PUT /usuarios/actualizar/{id} -> UserController@guardarUsuario (Nombre: usuarios.update) - MOVIDA AL GRUPO AUTH GENERAL
-        // Route::put('/actualizar/{id}', [UserController::class, 'guardarUsuario'])->name('update'); 
-
-        // PUT /usuarios/cambiar-tipo/{id} -> UserController@cambiarTipo (Nombre: usuarios.cambiar-tipo)
         Route::put('/cambiar-tipo/{id}', [UserController::class, 'cambiarTipo'])->name('cambiar-tipo');
-        
-        // DELETE /usuarios/eliminar/{id} -> UserController@eliminar (Nombre: usuarios.eliminar) - Desactivar (Soft Delete)
         Route::delete('/eliminar/{id}', [UserController::class, 'eliminar'])->name('eliminar');
-        
-        // POST /usuarios/restaurar/{id} -> UserController@restaurar (Nombre: usuarios.restaurar) - Reactivar
-        // Usamos POST para restaurar, como lo tenías definido antes. PUT también sería válido.
         Route::post('/restaurar/{id}', [UserController::class, 'restaurar'])->name('restaurar'); 
-        
-        // DELETE /usuarios/eliminar-permanente/{id} -> UserController@eliminarPermanente (Nombre: usuarios.eliminar-permanente)
         Route::delete('/eliminar-permanente/{id}', [UserController::class, 'eliminarPermanente'])->name('eliminar-permanente');
 
     });
 });
-
-// La ruta de LOGOUT y DEBUG se movieron al grupo de 'auth' general
 
