@@ -14,7 +14,7 @@
     @endif
 
     <div class="mb-6">
-        <a href="{{ url()->previous() }}"
+        <a href="{{ route('inicio') }}"
            class="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200 font-semibold">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -53,8 +53,8 @@
         </div>
     </div>
 
-            {{-- COMENTARIOS --}}
-        <section class="mt-10">
+    {{-- COMENTARIOS --}}
+    <section class="mt-10">
         <h2 class="text-xl font-bold mb-4 text-purple-700">Comentarios</h2>
 
         <form method="POST" action="{{ route('comentarios.store', $usuario->pk_usuario) }}" class="mb-6">
@@ -62,21 +62,17 @@
             <textarea name="contenido" required maxlength="1000" class="w-full border rounded p-3"
                     placeholder="Escribe un comentario..."></textarea>
             <label class="inline-flex items-center mt-2 gap-2">
-            <input type="checkbox" name="anonimo" value="1"> Publicar como anónimo
+                <input type="checkbox" name="anonimo" value="1"> Publicar como anónimo
             </label>
-            <button class="mt-3 bg-purple-600 text-white px-4 py-2 rounded">Comentar</button>
+            <button class="mt-3 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">Comentar</button>
         </form>
 
         <div class="space-y-4">
             @foreach($comentarios as $comentario)
-            @include('comentarios._comentario', ['comentario' => $comentario])
+                @include('comentarios._comentario', ['comentario' => $comentario])
             @endforeach
         </div>
-        </section>
-
+    </section>
 
 </div>
 @endsection
-
-
-

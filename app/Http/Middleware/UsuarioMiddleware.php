@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class UsuarioMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
@@ -14,12 +14,12 @@ class AdminMiddleware
             return redirect()->route('login');
         }
         
-        if (auth()->user()->fk_tipo_user == 1) {
+        if (auth()->user()->fk_tipo_user == 2) {
             return $next($request);
         }
         
-        if (auth()->user()->fk_tipo_user == 2) {
-            return redirect()->route('inicio');
+        if (auth()->user()->fk_tipo_user == 1) {
+            return redirect()->route('admin.dashboard');
         }
         
         abort(403, 'No tienes acceso a esta sección.');

@@ -9,6 +9,8 @@ class PresentacionController extends Controller
 {
     public function index($preguntaId)
     {
+        // Tu lógica para la vista de presentación
+        return view('presentacion.index');
         // Obtener el título de la encuesta
         $encuesta = DB::select("
             SELECT e.titulo 
@@ -52,6 +54,7 @@ class PresentacionController extends Controller
 
     public function resultados($preguntaId)
     {
+
         // Obtener el título de la encuesta
         $encuesta = DB::select("
             SELECT e.titulo 

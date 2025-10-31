@@ -14,6 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Usuario Administrador
         User::create([
             'nombres' => 'Admin',
             'ap_paterno' => 'Admin',
@@ -25,6 +26,7 @@ class UserSeeder extends Seeder
             'estatus' => true,
         ]);
 
+        // Usuario de prueba
         User::create([
             'nombres' => 'test',
             'ap_paterno' => 'test',
@@ -35,5 +37,7 @@ class UserSeeder extends Seeder
             'fk_tipo_user' => 2,
             'estatus' => true,
         ]);
+
+        $this->command->info('✅ Usuarios creados exitosamente');
     }
 }

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Tipo_usuario;
 
 class TipoUsuarioSeeder extends Seeder
 {
@@ -13,11 +13,16 @@ class TipoUsuarioSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('tipo_user')->insert([
+        // Tipo: Administrador
+        Tipo_usuario::create([
             'nombre' => 'Administrador'
         ]);
-        DB::table('tipo_user')->insert([
-            'nombre' => 'Común'
+
+        // Tipo: Usuario Normal
+        Tipo_usuario::create([
+            'nombre' => 'Usuario'
         ]);
+
+        $this->command->info('✅ Tipos de usuario creados exitosamente');
     }
 }
