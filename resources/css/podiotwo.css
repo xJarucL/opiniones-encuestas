@@ -1,0 +1,235 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #f5e6d3 0%, #e8d5b7 100%);
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 50px;
+}
+
+/* LUCES DE LAS ESQUINAS */
+.spotlight {
+    position: absolute;
+    top: 0;
+    width: 500px;
+    height: 900px;
+    opacity: 0.50;
+    pointer-events: none;
+}
+
+.spotlight.left {
+    left: 0;
+    background: linear-gradient(135deg, 
+        rgb(255, 255, 255) 0%, 
+        rgba(255, 255, 255, 0.3) 40%, 
+        rgba(255, 255, 255, 0) 100%);
+    transform-origin: top left;
+    animation: spotlightRotateLeft 1s ease-in-out infinite;
+    clip-path: polygon(0 0, 30% 0, 100% 100%, 0 100%);
+}
+
+.spotlight.right {
+    right: 0;
+    background: linear-gradient(225deg, 
+        rgb(255, 255, 255) 0%, 
+        rgba(255, 255, 255, 0.3) 40%, 
+        rgba(255, 255, 255, 0) 100%);
+    transform-origin: top right;
+    animation: spotlightRotateRight 1s ease-in-out infinite;
+    clip-path: polygon(70% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+@keyframes spotlightRotateLeft {
+    0% { transform: rotate(-20deg); }
+    50% { transform: rotate(35deg); }
+    100% { transform: rotate(-20deg); }
+}
+
+@keyframes spotlightRotateRight {
+    0% { transform: rotate(20deg); }
+    50% { transform: rotate(-35deg); }
+    100% { transform: rotate(20deg); }
+}
+
+/* BASE DEL PODIO */
+.podium-base {
+    position: absolute;
+    bottom: 50px;
+    width: 800px;
+    height: 60px;
+    background: linear-gradient(to bottom, #c97d7d 0%, #a85454 100%);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: translateX(-150%);
+    animation: slideInBase 1s ease-out forwards;
+}
+
+@keyframes slideInBase {
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* PILARES */
+.podium-pillar {
+    position: absolute;
+    bottom: 110px;
+    width: 200px;
+    background: linear-gradient(to bottom, #ffd700 0%, #f4c542 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(500px);
+    opacity: 0;
+}
+
+.pillar-number {
+    font-size: 120px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+    margin-top: 40px;
+}
+
+.pillar-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    position: absolute;
+    top: -50px;
+}
+
+/* Pilar 3 - Izquierda */
+.pillar-3 {
+    left: calc(50% - 330px);
+    height: 200px;
+    animation: riseUpPillar 0.8s ease-out forwards;
+    animation-delay: 1s;
+}
+
+/* Pilar 1 - Centro (más alto) */
+.pillar-1 {
+    left: calc(50% - 100px);
+    height: 320px;
+    animation: riseUpPillar 0.8s ease-out forwards;
+    animation-delay: 2.2s;
+}
+
+/* Pilar 2 - Derecha */
+.pillar-2 {
+    left: calc(50% + 130px);
+    height: 260px;
+    animation: riseUpPillar 0.8s ease-out forwards;
+    animation-delay: 1.6s;
+}
+
+@keyframes riseUpPillar {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.star {
+    position: absolute;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%) scale(0) rotate(0deg);
+    opacity: 0;
+    animation: starAppear 1.2s ease-out forwards;
+    animation-delay: 3.2s;
+}
+
+@keyframes starAppear {
+    0% {
+        transform: translateX(-50%) translateY(100px) scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    60% {
+        transform: translateX(-50%) translateY(-20px) scale(1.2) rotate(720deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) translateY(0) scale(1) rotate(720deg);
+        opacity: 1;
+    }
+}
+
+/* Brillo de la estrella */
+.star svg {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+.header {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: #4b2e2e;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Botón siguiente */
+.next-button {
+    position: absolute;
+    bottom: 90px;
+    right: 80px;
+    background: #a85454;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 28px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    z-index: 10;
+}
+
+.next-button:hover {
+    background: #c97d7d;
+    transform: scale(1.05);
+}
+
+.next-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.icon {
+    display: none;
+}
+
+.pillar-percent {
+    position: absolute;
+    bottom: 10px;
+    font-size: 26px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+}

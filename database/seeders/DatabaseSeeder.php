@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TipoUsuarioSeeder::class,
             UserSeeder::class,
+            EncuestaSeeder::class,
+            Multiple::class,
         ]);
 
         $this->command->info('');

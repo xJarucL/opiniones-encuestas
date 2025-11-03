@@ -9,8 +9,6 @@ class PresentacionController extends Controller
 {
     public function index($preguntaId)
     {
-        // Tu lógica para la vista de presentación
-        return view('presentacion.index');
         // Obtener el título de la encuesta
         $encuesta = DB::select("
             SELECT e.titulo 
@@ -27,9 +25,6 @@ class PresentacionController extends Controller
 
     public function podio($preguntaId)
     {
-        //$preguntaId = 1; ID de la pregunta "quien es el mas guapo"
-        
-        // Consulta para obtener los top 3
         $resultados = DB::select("
             SELECT 
                 texto AS nombre, 
@@ -42,7 +37,6 @@ class PresentacionController extends Controller
             LIMIT 3
         ", [$preguntaId, $preguntaId]);
         
-        // Si hay resultados, organizarlos para el podio
         $podio = [
             'primero' => $resultados[0] ?? null,
             'segundo' => $resultados[1] ?? null,
@@ -54,8 +48,6 @@ class PresentacionController extends Controller
 
     public function resultados($preguntaId)
     {
-
-        // Obtener el título de la encuesta
         $encuesta = DB::select("
             SELECT e.titulo 
             FROM encuestas e
@@ -66,7 +58,6 @@ class PresentacionController extends Controller
         
         $tituloEncuesta = $encuesta[0]->titulo ?? 'Resultados';
         
-        // Obtener todos los resultados ordenados
         $resultados = DB::select("
             SELECT 
                 texto AS nombre, 
@@ -78,7 +69,6 @@ class PresentacionController extends Controller
             ORDER BY total_votos DESC
         ", [$preguntaId, $preguntaId]);
         
-        // Contar total de participantes
         $totalParticipantes = count($resultados);
 
         return view('users.resultados', compact('resultados', 'tituloEncuesta', 'totalParticipantes', 'preguntaId'));
