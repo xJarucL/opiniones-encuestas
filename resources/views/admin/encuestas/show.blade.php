@@ -129,6 +129,35 @@
 </div>
 @endforeach
 
+<!-- Botón flotante -->
+<a href="{{ route('validarButton', $encuesta->id) }}" 
+   class="boton-flotante">
+   Ver Resultados
+</a>
+
+<style>
+.boton-flotante {
+    position: fixed;
+    bottom: 20px;
+    right: 12px;
+    display: inline-block;
+    background-color: #16a34a;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s, transform 0.2s;
+    z-index: 1000;
+}
+.boton-flotante:hover {
+    background-color: #15803d;
+    transform: scale(1.05);
+}
+</style>
+
 @endsection
 
 @section('styles')
