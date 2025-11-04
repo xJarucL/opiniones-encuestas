@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\PresentacionController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UsuarioMiddleware;
+use App\Http\Controllers\PresentaciontwoController;
 use Illuminate\Support\Facades\Auth;
 
 // ==========================================================
@@ -86,6 +87,20 @@ Route::middleware(['auth'])->group(function () {
             'mensaje' => 'No hay usuario autenticado'
         ]);
     })->name('debug.user');
+
+    // Presentación normal
+    Route::get('/presentacion/{preguntaId}', [PresentacionController::class, 'index'])->name('presentacion');
+    Route::get('/podio/{preguntaId}', [PresentacionController::class, 'podio'])->name('podio');
+    Route::get('/resultados/{preguntaId}', [PresentacionController::class, 'resultados'])->name('resultados');
+
+    // Presentación de varias preguntas
+    Route::get('/presentacionone/{encuestaId}', [PresentaciontwoController::class, 'index'])->name('presentacionone');
+    Route::get('/presentaciontwo/{encuestaId}/{preguntaIndex}', [PresentaciontwoController::class, 'inicio'])->name('presentaciontwo');
+    Route::get('/podiotwo/{encuestaId}/{preguntaIndex}', [PresentaciontwoController::class, 'podio'])->name('podiotwo');
+    Route::get('/resultadostwo/{encuestaId}', [PresentaciontwoController::class, 'resultados'])->name('resultadostwo');
+
+    // Validar cantidad de preguntas
+    Route::get('/validarButton/{encuestaId}', [PresentaciontwoController::class, 'validar'])->name('validarButton');
 });
 
 

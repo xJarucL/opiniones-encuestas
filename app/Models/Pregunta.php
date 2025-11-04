@@ -11,10 +11,6 @@ class Pregunta extends Model
 
     protected $table = 'preguntas';
 
-    /**
-     * ¡LA CORRECCIÓN ESTÁ AQUÍ!
-     * 'opciones' debe estar en $fillable para que se guarde.
-     */
     protected $fillable = [
         'encuesta_id',
         'texto',
@@ -25,11 +21,11 @@ class Pregunta extends Model
 
     public function encuesta()
     {
-        return $this->belongsTo(Encuesta::class, 'encuesta_id', 'id');
+        return $this->belongsTo(Encuesta::class, 'encuesta_id');
     }
 
     public function respuestas()
     {
-        return $this->hasMany(Respuesta::class, 'pregunta_id', 'id');
+        return $this->hasMany(Respuesta::class, 'pregunta_id');
     }
 }

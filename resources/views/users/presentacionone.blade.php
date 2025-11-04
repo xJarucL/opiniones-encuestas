@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presentación - Nominados</title>
-    @vite(['resources/css/presentacion.css', 'resources/js/presentacion.js'])
+    @vite(['resources/css/presentacion.css', 'resources/js/presentacionone.js'])
 </head>
 <body>
     <div class="container">
