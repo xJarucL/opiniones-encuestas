@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Auth; // <-- AÑADIDO PARA CORREGIR LOS ERRORES DEL EDITOR
+use Illuminate\Support\Facades\Auth;
 
 class ComentarioController extends Controller
 {
@@ -23,23 +23,31 @@ class ComentarioController extends Controller
     
     /**
      * Listar todos los comentarios para el panel de administración
-     * (Tu código ya estaba bien aquí)
      */
-    public function index()
+    public function index(Request $request) // Añadido Request para filtros
     {
         // 1. Obtener conteos (Optimización)
-        // Usamos withTrashed() para que coincida con la consulta principal
         $totalCount = Comentario::withTrashed()->count();
         $ocultoCount = Comentario::withTrashed()->where('estatus', 'oculto')->count();
         $visibleCount = Comentario::withTrashed()->where('estatus', '!=', 'oculto')->count();
 
-        // 2. Cargar comentarios con sus relaciones (Tu consulta original)
-        $comentarios = Comentario::with(['autor', 'perfil'])
+        // 2. Cargar comentarios con sus relaciones (Consulta principal)
+        $query = Comentario::with(['autor', 'perfil'])
             ->withTrashed() // Incluir comentarios eliminados
-            ->latest()
-            ->paginate(15);
+            ->latest();
 
-        // 3. Pasar todo a la vista
+        // 3. Aplicar filtros si existen en la URL
+        if ($request->has('filtro')) {
+            if ($request->filtro == 'visible') {
+                $query->where('estatus', '!=', 'oculto');
+            } elseif ($request->filtro == 'oculto') {
+                $query->where('estatus', 'oculto');
+            }
+        }
+
+        $comentarios = $query->paginate(15);
+
+        // 4. Pasar todo a la vista
         return view('comentarios.index', compact(
             'comentarios',
             'totalCount',
@@ -62,7 +70,6 @@ class ComentarioController extends Controller
         $perfil = User::findOrFail($id);
 
         Comentario::create([
-            // === CORREGIDO AQUÍ ===
             'fk_autor' => Auth::user()->pk_usuario,
             'fk_perfil_user' => $perfil->pk_usuario,
             'contenido' => $r->contenido,
@@ -81,7 +88,6 @@ class ComentarioController extends Controller
         $r->validate(['contenido' => 'required|string|max:1000']);
 
         Comentario::create([
-            // === CORREGIDO AQUÍ ===
             'fk_autor' => Auth::user()->pk_usuario,
             'fk_perfil_user' => $comentario->fk_perfil_user,
             'fk_coment_respuesta' => $comentario->pk_comentario,
@@ -94,20 +100,44 @@ class ComentarioController extends Controller
     }
 
     /**
-     * Eliminar un comentario (solo propietario o admin)
-     * (Tu código original - sin cambios)
+     * Eliminar un comentario (solo propietario)
+     * Esta función es llamada por la ruta 'comentarios.destroy' (para usuarios normales)
      */
-    public function destroy(Comentario $comentario)
+    public function destroy(Comentario $comentario) // Corregido para usar Route-Model Binding
     {
-        $this->authorize('delete', $comentario);
-        $comentario->update(['estatus' => 'eliminado']);
-        $comentario->delete();
-        return back()->with('success', 'Comentario eliminado.');
+        $this->authorize('delete', $comentario); // Usar Policy para verificar propietario
+        
+        try {
+            $comentario->update(['estatus' => 'eliminado']); // Opcional: marcar antes de borrar
+            $comentario->delete(); // Soft delete o hard delete (depende de tu modelo)
+            
+            return back()->with('success', 'Comentario eliminado.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al eliminar el comentario: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar un comentario (solo admin)
+     * Esta función es llamada por la ruta 'admin.comentarios.destroy'
+     */
+    public function destroyAdmin(Comentario $comentario)
+    {
+        Gate::authorize('moderate-comments'); // Verificar que es admin
+        
+        try {
+            $comentario->delete(); // Soft delete o hard delete
+            return redirect()->route('admin.comentarios.index')
+                ->with('success', 'Comentario eliminado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.comentarios.index')
+                ->with('error', 'Error al eliminar: ' . $e->getMessage());
+        }
     }
 
     /**
      * Ocultar un comentario (solo admin)
-     * (Tu código original - sin cambios)
      */
     public function hide(Comentario $comentario)
     {
@@ -118,7 +148,6 @@ class ComentarioController extends Controller
 
     /**
      * Mostrar un comentario oculto (solo admin)
-     * (Tu código original - sin cambios)
      */
     public function showComment(Comentario $comentario)
     {
@@ -129,7 +158,6 @@ class ComentarioController extends Controller
 
     /**
      * Actualizar/editar un comentario (solo propietario)
-     * (Tu código original - sin cambios)
      */
     public function update(Request $r, Comentario $comentario)
     {
@@ -146,4 +174,4 @@ class ComentarioController extends Controller
         return back()->with('success', 'Comentario actualizado correctamente.');
     }
 }
-    
+

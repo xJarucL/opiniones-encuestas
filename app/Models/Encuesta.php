@@ -14,10 +14,14 @@ class Encuesta extends Model
         'descripcion',
         'categoria_id',
         'estado',
+        'fecha_inicio', // <-- AÑADIDO
+        'fecha_fin',    // <-- AÑADIDO
     ];
 
     protected $casts = [
         'estado' => 'boolean',
+        'fecha_inicio' => 'datetime', // <-- Buena práctica
+        'fecha_fin' => 'datetime',    // <-- Buena práctica
     ];
 
     public function categoria()

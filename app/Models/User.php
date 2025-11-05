@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute; // <-- Importar Attribute
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
+    // Tu Primary Key está bien
     protected $primaryKey = 'pk_usuario';
 
     /**
@@ -33,6 +35,17 @@ class User extends Authenticatable
 
     public function tipo_usuario(){
         return $this->belongsTo(Tipo_usuario::class, 'fk_tipo_user', 'pk_tipo_user');
+    }
+
+    // ==========================================================
+    // ¡NUEVO ACCESOR AÑADIDO!
+    // Esto nos da acceso a una propiedad $user->full_name
+    // ==========================================================
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => "{$this->nombres} {$this->ap_paterno} {$this->ap_materno}",
+        );
     }
 
     /**

@@ -16,6 +16,7 @@ class Pregunta extends Model
         'texto',
         'tipo',
         'orden',
+        'opciones', // <-- Esta línea es la importante
     ];
 
     public function encuesta()

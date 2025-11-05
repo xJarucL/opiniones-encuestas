@@ -2,48 +2,23 @@
 
 @section('title', 'Moderación de Comentarios')
 
+{{-- ====================================================== --}}
+{{-- AGREGADO: Cargar SweetAlert2 desde CDN en el head --}}
+{{-- ====================================================== --}}
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endpush
+
 @section('content')
 
-    <!-- Header con gradiente -->
-    <header class="mb-8 animate-fade-slide">
-        <div class="bg-gradient-to-r from-yellow-500 to-yellow-700 rounded-2xl shadow-xl p-8 text-white">
-            <div class="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                    <h1 class="text-4xl font-bold mb-2">Moderación de Opiniones y Comentarios</h1>
-                    <p class="text-yellow-100 text-lg">
-                        Revisa, oculta o muestra comentarios para mantener un contenido apropiado
-                    </p>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2">
-                        <p class="text-sm font-semibold">Total: {{ $comentarios->count() }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+
 
     <!-- Mensajes de alerta -->
     <div class="mb-6 animate-fade-slide" style="animation-delay: 0.1s;">
         <x-msj-alert />
     </div>
 
-    <!-- Filtros -->
-    <div class="mb-6 animate-fade-slide" style="animation-delay: 0.2s;">
-        <div class="bg-white rounded-xl shadow-md p-4">
-            <div class="flex flex-wrap gap-3">
-                <button class="px-4 py-2 bg-yellow-100 text-yellow-700 font-medium rounded-lg hover:bg-yellow-200 transition-colors">
-                    Todos ({{ $comentarios->count() }})
-                </button>
-                <button class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                    Visibles ({{ $comentarios->where('estatus', '!=', 'oculto')->count() }})
-                </button>
-                <button class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                    Ocultos ({{ $comentarios->where('estatus', 'oculto')->count() }})
-                </button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Lista de comentarios -->
     <div class="space-y-4 animate-fade-slide" style="animation-delay: 0.3s;">
@@ -56,9 +31,13 @@
                         <div class="flex items-center space-x-3">
                             <!-- Avatar del usuario -->
                             <div class="flex-shrink-0">
-                                <div class="h-12 w-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                    {{ strtoupper(substr($comentario->autor->nombres ?? 'U', 0, 1)) }}
-                                </div>
+                                @if($comentario->autor && $comentario->autor->img_user)
+                                    <img src="{{ asset('storage/'.$comentario->autor->img_user) }}" alt="{{ $comentario->autor->username }}" class="h-12 w-12 rounded-full object-cover border-2 border-yellow-300">
+                                @else
+                                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                        {{ strtoupper(substr($comentario->autor->nombres ?? 'U', 0, 1)) }}
+                                    </div>
+                                @endif
                             </div>
                             
                             <!-- Info del usuario -->
@@ -78,13 +57,7 @@
                                     Oculto
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                    Visible
-                                </span>
+
                             @endif
                         </div>
                     </div>
@@ -112,7 +85,7 @@
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            Perfil ID: {{ $comentario->fk_perfil_user }}
+                            Perfil: {{ $comentario->perfil->nombres ?? 'N/A' }}
                         </div>
                         @endif
 
@@ -142,47 +115,30 @@
                                     Mostrar Comentario
                                 </button>
                             </form>
-                        @else
-                            <!-- Ocultar comentario -->
-                            <form action="{{ route('admin.comentarios.hide', $comentario->pk_comentario) }}" method="POST" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" 
-                                        class="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all duration-200 hover:scale-105 group"
-                                        onclick="return confirm('¿Estás seguro de ocultar este comentario?')">
-                                    <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
-                                    </svg>
-                                    Ocultar Comentario
-                                </button>
-                            </form>
                         @endif
 
                         <!-- Eliminar comentario -->
-                        <form action="{{ route('comentarios.destroy', $comentario->pk_comentario) }}" method="POST" class="inline">
+                        {{-- ====================================================== --}}
+                        {{-- ESTA ES LA RUTA CORREGIDA --}}
+                        {{-- ====================================================== --}}
+                        <form action="{{ route('admin.comentarios.destroy', $comentario->pk_comentario) }}" method="POST" class="inline delete-form">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" 
-                                    class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-all duration-200 hover:scale-105 group"
-                                    onclick="return confirm('¿Estás seguro de eliminar permanentemente este comentario?')">
+                            <button type="button"
+                                    data-swal-form
+                                    data-swal-title="¿Eliminar permanentemente?"
+                                    data-swal-text="Esta acción NO se puede revertir. El comentario se borrará."
+                                    data-swal-icon="error"
+                                    data-swal-confirm="Sí, eliminar"
+                                    data-swal-cancel="Cancelar"
+                                    data-swal-color="#dc2626"
+                                    class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-all duration-200 hover:scale-105 group">
                                 <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                                 Eliminar
                             </button>
                         </form>
-
-                        <!-- Ver perfil del usuario -->
-                        @if($comentario->fk_perfil_user)
-                        <a href="{{ route('compañero.show', $comentario->fk_perfil_user) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all duration-200 hover:scale-105 group"
-                           target="_blank">
-                            <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                            Ver Contexto
-                        </a>
-                        @endif
                     </div>
                 </div>
 
@@ -206,7 +162,7 @@
     @if($comentarios->hasPages())
     <div class="mt-8 animate-fade-slide" style="animation-delay: 0.4s;">
         <div class="bg-white rounded-xl shadow-md p-4">
-            {{ $comentarios->links() }}
+            {{ $comentarios->appends(request()->query())->links() }}
         </div>
     </div>
     @endif
@@ -217,7 +173,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 uppercase">Total Comentarios</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-1">{{ $comentarios->count() }}</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-1">{{ $totalCount }}</p>
                 </div>
                 <div class="bg-yellow-100 p-3 rounded-xl">
                     <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,35 +181,51 @@
                     </svg>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 uppercase">Visibles</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-1">{{ $comentarios->where('estatus', '!=', 'oculto')->count() }}</p>
-                </div>
-                <div class="bg-green-100 p-3 rounded-xl">
-                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 uppercase">Ocultos</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-1">{{ $comentarios->where('estatus', 'oculto')->count() }}</p>
-                </div>
-                <div class="bg-red-100 p-3 rounded-xl">
-                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
     </div>
 
 @endsection
+
+{{-- ====================================================== --}}
+{{-- CARGAR SWEETALERT2 ANTES DEL SCRIPT --}}
+{{-- ====================================================== --}}
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const swalButtons = document.querySelectorAll('[data-swal-form]');
+
+        swalButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault(); 
+
+                const form = this.closest('form');
+                if (!form) return;
+
+                const title = this.dataset.swalTitle || '¿Estás seguro?';
+                const text = this.dataset.swalText || 'Esta acción no se puede revertir.';
+                const icon = this.dataset.swalIcon || 'warning';
+                const confirmButtonText = this.dataset.swalConfirm || 'Sí, hazlo';
+                const cancelButtonText = this.dataset.swalCancel || 'Cancelar';
+                const confirmButtonColor = this.dataset.swalColor || '#3085d6';
+
+                Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: icon,
+                    showCancelButton: true,
+                    confirmButtonColor: confirmButtonColor,
+                    cancelButtonColor: '#6e7881',
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: cancelButtonText
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+@endpush
+

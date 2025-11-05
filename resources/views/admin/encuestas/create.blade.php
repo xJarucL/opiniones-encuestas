@@ -33,20 +33,18 @@
     @endif
 
     <div class="space-y-6">
-        <!-- Título -->
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Título de la Encuesta *
             </label>
             <input type="text" 
-                    name="titulo" 
-                    value="{{ old('titulo', $encuesta->titulo ?? '') }}"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
-                    placeholder="Ej: Encuesta de Satisfacción 2025"
-                    required>
+                   name="titulo" 
+                   value="{{ old('titulo', $encuesta->titulo ?? '') }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                   placeholder="Ej: Nominaciones Anuales 2025"
+                   required>
         </div>
 
-        <!-- Descripción -->
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Descripción
@@ -54,10 +52,9 @@
             <textarea name="descripcion" 
                       rows="3"
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
-                      placeholder="Describe el propósito de la encuesta">{{ old('descripcion', $encuesta->descripcion ?? '') }}</textarea>
+                      placeholder="Describe el propósito de esta votación">{{ old('descripcion', $encuesta->descripcion ?? '') }}</textarea>
         </div>
 
-        <!-- Categoría -->
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Categoría *
@@ -78,7 +75,6 @@
             </p>
         </div>
 
-        <!-- Fechas de Activación (Reemplazo del Checkbox) -->
         <div class="border-t border-gray-200 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label for="fecha_inicio" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -87,12 +83,8 @@
                 <input type="date" 
                        id="fecha_inicio" 
                        name="fecha_inicio" 
-                       value="{{ old('fecha_inicio', $encuesta->fecha_inicio ?? null) }}"
+                       value="{{ old('fecha_inicio', isset($encuesta->fecha_inicio) ? \Carbon\Carbon::parse($encuesta->fecha_inicio)->format('Y-m-d') : null) }}"
                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
-                @error('fecha_inicio')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">Si se deja vacío, la encuesta inicia inmediatamente.</p>
             </div>
 
             <div>
@@ -102,19 +94,14 @@
                 <input type="date" 
                        id="fecha_fin" 
                        name="fecha_fin" 
-                       value="{{ old('fecha_fin', $encuesta->fecha_fin ?? null) }}"
+                       value="{{ old('fecha_fin', isset($encuesta->fecha_fin) ? \Carbon\Carbon::parse($encuesta->fecha_fin)->format('Y-m-d') : null) }}"
                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
-                @error('fecha_fin')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                <p class="text-xs text-gray-500 mt-1">La fecha de fin debe ser igual o posterior a la fecha de inicio.</p>
             </div>
         </div>
 
-        <!-- Preguntas (SOLO OPCIÓN MÚLTIPLE) -->
         <div class="border-t border-gray-200 pt-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">Preguntas de Opción Múltiple</h3>
+                <h3 class="text-lg font-semibold text-gray-800">Preguntas de Nominación</h3>
                 <button type="button" 
                         onclick="agregarPregunta()"
                         class="bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition flex items-center gap-2 font-semibold">
@@ -124,11 +111,14 @@
                     Agregar Pregunta
                 </button>
             </div>
+            
+            <p class="text-sm text-gray-500 mb-4 -mt-2">Las opciones de respuesta para estas preguntas serán automáticamente todos los usuarios registrados.</p>
 
             <div id="preguntas-container" class="space-y-4">
+                
+                {{-- Caso 1: Editando una encuesta existente --}}
                 @if(isset($encuesta) && $encuesta->preguntas->count() > 0)
                     @foreach($encuesta->preguntas as $index => $pregunta)
-                    @if($pregunta->tipo === 'multiple') 
                         <div class="pregunta-item bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
                             <div class="flex items-start justify-between mb-3">
                                 <h4 class="font-semibold text-gray-700">Pregunta {{ $index + 1 }}</h4>
@@ -141,98 +131,49 @@
                                 </button>
                             </div>
                             
-                            {{-- Input de Texto de la Pregunta --}}
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Texto de la Pregunta</label>
                             <input type="text" 
-                                    name="preguntas[{{ $index }}][texto]" 
-                                    value="{{ old('preguntas.'.$index.'.texto', $pregunta->texto) }}"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-green-500"
-                                    placeholder="Escribe tu pregunta"
-                                    required>
-                                    
-                            {{-- Input Oculto para asegurar el tipo 'multiple' --}}
-                            <input type="hidden" name="preguntas[{{ $index }}][tipo]" value="multiple">
+                                   name="preguntas[{{ $index }}][texto]" 
+                                   value="{{ old('preguntas.'.$index.'.texto', $pregunta->texto) }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-green-500"
+                                   placeholder="Ej: ¿Quién es el mejor compañero?"
+                                   required>
+                                   
+                            <input type="hidden" name="preguntas[{{ $index }}][tipo]" value="nominados">
 
-                            {{-- Contenedor de Opciones --}}
-                            <div class="opciones-container mt-4 p-4 border border-gray-300 rounded-lg bg-white space-y-3">
-                                <h5 class="text-sm font-semibold text-gray-600 mb-2">Opciones de Respuesta:</h5>
-                                
-                                @php
-                                    // Usamos 'opciones_array' que se decodificó en el controlador
-                                    $opciones = old('preguntas.'.$index.'.opciones', $pregunta->opciones_array ?? []);
-                                    if(empty($opciones) || !is_array($opciones)) {
-                                        $opciones = ['Opción A', 'Opción B']; // Placeholders si no hay datos
-                                    }
-                                @endphp
-
-                                @foreach($opciones as $opcionTexto)
-                                    <div class="flex gap-2 opcion-item">
-                                        <input type="text"
-                                               name="preguntas[{{ $index }}][opciones][]"
-                                               value="{{ $opcionTexto }}"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500"
-                                               placeholder="Escribe una opción"
-                                               required>
-                                        <button type="button" onclick="eliminarOpcion(this)" class="text-red-500 hover:text-red-700 p-2">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                        </button>
-                                    </div>
-                                @endforeach
-
-                                <button type="button" onclick="agregarOpcion(this)" class="text-sm text-green-600 hover:underline mt-2">
-                                    + Añadir Opción
-                                </button>
-                            </div>
-
+                            {{-- El contenedor de opciones ha sido ELIMINADO --}}
                         </div>
-                    @endif
                     @endforeach
+                
+                {{-- Caso 2: Creando una nueva encuesta (template inicial) --}}
                 @else
-                {{-- Template inicial si no hay preguntas --}}
-                <div class="pregunta-item bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
-                    <div class="flex items-start justify-between mb-3">
-                        <h4 class="font-semibold text-gray-700">Pregunta 1</h4>
-                        <button type="button" 
-                                onclick="eliminarPregunta(this)"
-                                class="text-red-600 hover:text-red-700 p-1">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <input type="text" 
-                            name="preguntas[0][texto]" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-green-500"
-                            placeholder="Escribe tu pregunta"
-                            required>
-                            
-                    <input type="hidden" name="preguntas[0][tipo]" value="multiple">
-
-                    {{-- Contenedor de Opciones Inicial --}}
-                    <div class="opciones-container mt-4 p-4 border border-gray-300 rounded-lg bg-white space-y-3">
-                        <h5 class="text-sm font-semibold text-gray-600 mb-2">Opciones de Respuesta:</h5>
-                        <div class="flex gap-2 opcion-item">
-                            <input type="text" name="preguntas[0][opciones][]" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500" placeholder="Opción 1" required>
-                            <button type="button" onclick="eliminarOpcion(this)" class="text-red-500 hover:text-red-700 p-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <div class="pregunta-item bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
+                        <div class="flex items-start justify-between mb-3">
+                            <h4 class="font-semibold text-gray-700">Pregunta 1</h4>
+                            <button type="button" 
+                                    onclick="eliminarPregunta(this)"
+                                    class="text-red-600 hover:text-red-700 p-1">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
                             </button>
                         </div>
-                        <div class="flex gap-2 opcion-item">
-                            <input type="text" name="preguntas[0][opciones][]" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500" placeholder="Opción 2" required>
-                            <button type="button" onclick="eliminarOpcion(this)" class="text-red-500 hover:text-red-700 p-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
-                        </div>
-                        <button type="button" onclick="agregarOpcion(this)" class="text-sm text-green-600 hover:underline mt-2">
-                            + Añadir Opción
-                        </button>
+                        
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Texto de la Pregunta</label>
+                        <input type="text" 
+                               name="preguntas[0][texto]" 
+                               value="{{ old('preguntas.0.texto') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-green-500"
+                               placeholder="Ej: ¿Quién es el mejor compañero?"
+                               required>
+                        
+                        <input type="hidden" name="preguntas[0][tipo]" value="nominados">
                     </div>
-                </div>
                 @endif
             </div>
         </div>
     </div>
 
-    <!-- Botones -->
     <div class="flex gap-4 mt-8">
         <button type="submit" 
                 class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-colors shadow-lg">
@@ -248,51 +189,46 @@
 <script>
 let preguntaIndex = {{ isset($encuesta) ? $encuesta->preguntas->count() : 1 }};
 
-// Función para formatear la fecha actual (YYYY-MM-DD)
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
+// La variable 'allUsers' y 'buildUserOptions' han sido ELIMINADAS
 
 // Lógica de Validación de Fechas
 document.addEventListener('DOMContentLoaded', function () {
     const fechaInicioInput = document.getElementById('fecha_inicio');
     const fechaFinInput = document.getElementById('fecha_fin');
+    
+    function getCurrentDate() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
     const currentDate = getCurrentDate();
-
-    // 1. Establecer la fecha mínima de inicio a la fecha actual
-    // Si estamos editando y la fecha guardada es anterior, la dejamos, pero para crear, forzamos el mínimo.
-    if (!fechaInicioInput.value) { 
-        fechaInicioInput.setAttribute('min', currentDate);
-    }
     
-    // 2. Listener para asegurar que la fecha de fin sea >= fecha de inicio
-    function updateFechaFinMin() {
-        const minDate = fechaInicioInput.value || currentDate;
-        fechaFinInput.setAttribute('min', minDate);
-
-        // Si la fecha de fin seleccionada es anterior a la nueva fecha mínima, la limpiamos.
-        if (fechaFinInput.value && fechaFinInput.value < minDate) {
-             fechaFinInput.value = minDate; // Forzar al mínimo o limpiar, dependiendo de la UX deseada
+    if (fechaInicioInput && fechaFinInput) {
+        if (!fechaInicioInput.value) { 
+            fechaInicioInput.setAttribute('min', currentDate);
         }
+        function updateFechaFinMin() {
+            const minDate = fechaInicioInput.value || currentDate;
+            fechaFinInput.setAttribute('min', minDate);
+            if (fechaFinInput.value && fechaFinInput.value < minDate) {
+                 fechaFinInput.value = minDate;
+            }
+        }
+        updateFechaFinMin();
+        fechaInicioInput.addEventListener('change', updateFechaFinMin);
     }
-
-    // Ejecutar al inicio (por si hay valor precargado)
-    updateFechaFinMin();
-    
-    // Ejecutar cada vez que cambia la fecha de inicio
-    fechaInicioInput.addEventListener('change', updateFechaFinMin);
-    
+    actualizarNumeracion();
 });
-// FIN Lógica de Validación de Fechas
+
+// --- Funciones de Preguntas (SIMPLIFICADAS) ---
 
 function agregarPregunta() {
     const container = document.getElementById('preguntas-container');
     const newIndex = preguntaIndex; 
-    
+
+    // Plantilla de la nueva pregunta (SIN OPCIONES)
     const nuevaPregunta = `
         <div class="pregunta-item bg-gray-50 p-6 rounded-lg border-2 border-gray-200 animate-fade-slide">
             <div class="flex items-start justify-between mb-3">
@@ -305,33 +241,16 @@ function agregarPregunta() {
                     </svg>
                 </button>
             </div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Texto de la Pregunta</label>
             <input type="text" 
-                    name="preguntas[${newIndex}][texto]" 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-green-500"
-                    placeholder="Escribe tu pregunta"
-                    required>
-            <input type="hidden" name="preguntas[${newIndex}][tipo]" value="multiple">
-
-            <div class="opciones-container mt-4 p-4 border border-gray-300 rounded-lg bg-white space-y-3">
-                <h5 class="text-sm font-semibold text-gray-600 mb-2">Opciones de Respuesta:</h5>
-                <div class="flex gap-2 opcion-item">
-                    <input type="text" name="preguntas[${newIndex}][opciones][]" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500" placeholder="Opción 1" required>
-                    <button type="button" onclick="eliminarOpcion(this)" class="text-red-500 hover:text-red-700 p-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <div class="flex gap-2 opcion-item">
-                    <input type="text" name="preguntas[${newIndex}][opciones][]" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500" placeholder="Opción 2" required>
-                    <button type="button" onclick="eliminarOpcion(this)" class="text-red-500 hover:text-red-700 p-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <button type="button" onclick="agregarOpcion(this)" class="text-sm text-green-600 hover:underline mt-2">
-                    + Añadir Opción
-                </button>
-            </div>
+                   name="preguntas[${newIndex}][texto]" 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-green-500"
+                   placeholder="Ej: ¿Quién es el más colaborativo?"
+                   required>
+            <input type="hidden" name="preguntas[${newIndex}][tipo]" value="nominados">
         </div>
     `;
+    
     container.insertAdjacentHTML('beforeend', nuevaPregunta);
     preguntaIndex++;
     actualizarNumeracion();
@@ -341,66 +260,30 @@ function eliminarPregunta(button) {
     const preguntas = document.querySelectorAll('.pregunta-item');
     if (preguntas.length > 1) {
         button.closest('.pregunta-item').remove();
-        preguntaIndex = document.querySelectorAll('.pregunta-item').length;
         actualizarNumeracion();
     } else {
         alert('Debe haber al menos una pregunta en la encuesta');
     }
 }
 
-function agregarOpcion(button) {
-    const container = button.closest('.opciones-container');
-    const preguntaItem = button.closest('.pregunta-item');
-    
-    // Obtener el índice de la pregunta (necesario para el campo name)
-    const indexMatch = preguntaItem.querySelector('input[type="text"]').name.match(/preguntas\[(\d+)\]/);
-    const index = indexMatch ? indexMatch[1] : 0; 
-
-    const opcionTemplate = `
-        <div class="flex gap-2 opcion-item">
-            <input type="text"
-                   name="preguntas[${index}][opciones][]" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500"
-                   placeholder="Escribe una opción"
-                   required>
-            <button type="button" onclick="eliminarOpcion(this)" class="text-red-500 hover:text-red-700 p-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-    `;
-    // Insertamos la nueva opción justo antes del botón "Añadir Opción"
-    button.insertAdjacentHTML('beforebegin', opcionTemplate);
-}
-
-function eliminarOpcion(button) {
-    const opcionesContainer = button.closest('.opciones-container');
-    const opciones = opcionesContainer.querySelectorAll('.opcion-item');
-    
-    // Obligar a que haya al menos dos opciones para Option Multiple
-    if (opciones.length > 2) { 
-        button.closest('.opcion-item').remove();
-    } else {
-        alert('Debe haber al menos dos opciones de respuesta.');
-    }
-}
-
 function actualizarNumeracion() {
     const preguntas = document.querySelectorAll('.pregunta-item');
+    preguntaIndex = preguntas.length; 
+
     preguntas.forEach((pregunta, index) => {
-        // Actualizar el título de la pregunta
         pregunta.querySelector('h4').textContent = `Pregunta ${index + 1}`;
         
-        // Actualizar los nombres de los inputs de preguntas y opciones
-        pregunta.querySelector('input[name*="[texto]"]').name = `preguntas[${index}][texto]`;
-        pregunta.querySelector('input[name*="[tipo]"]').name = `preguntas[${index}][tipo]`;
-        
-        // Actualizar los nombres de los inputs de opciones
-        pregunta.querySelectorAll('.opcion-item input').forEach(input => {
-            input.name = `preguntas[${index}][opciones][]`;
-        });
+        const inputTexto = pregunta.querySelector('input[name*="[texto]"]');
+        if (inputTexto) {
+            inputTexto.name = `preguntas[${index}][texto]`;
+        }
+
+        const inputTipo = pregunta.querySelector('input[name**="[tipo]"]');
+        if (inputTipo) {
+            inputTipo.name = `preguntas[${index}][tipo]`;
+        }
     });
 }
-document.addEventListener('DOMContentLoaded', actualizarNumeracion);
 </script>
 
 @endsection

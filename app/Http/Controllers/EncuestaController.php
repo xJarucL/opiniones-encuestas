@@ -5,14 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\Encuesta;
 use App\Models\Categoria;
 use App\Models\Pregunta;
+use App\Models\User; // <-- Lo mantenemos por si acaso, pero no es crítico aquí
 use Illuminate\Http\Request;
-use Carbon\Carbon; // Necesario para trabajar con fechas
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class EncuestaController extends Controller
 {
     /**
-     * Mostrar lista de encuestas
+     * Constructor
      */
+    public function __construct()
+    {
+        $this->middleware('auth'); 
+        $this->middleware('admin')->except(['showPublicIndex']);
+    }
+
+    /**
+     * Vista pública de encuestas
+     */
+    public function showPublicIndex()
+    {
+        $encuestas = Encuesta::where('estado', 1)
+                            ->with('preguntas') 
+                            ->latest()
+                            ->paginate(10);
+                            
+        return view('encuestas', [
+            'encuestas' => $encuestas,
+            'usuario' => Auth::user()
+        ]);
+    }
+
+
+    // ==========================================================
+    // FUNCIONES DE ADMINISTRADOR
+    // ==========================================================
+
     public function index()
     {
         $encuestas = Encuesta::with('categoria')
@@ -20,7 +49,7 @@ class EncuestaController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $totalRespuestas = 0; 
+        $totalRespuestas = 0; // Esto necesitará una lógica más avanzada
         $totalCategorias = Categoria::count();
 
         return view('admin.encuestas.index', compact('encuestas', 'totalRespuestas', 'totalCategorias'));
@@ -32,6 +61,7 @@ class EncuestaController extends Controller
     public function create()
     {
         $categorias = Categoria::all();
+        // <-- CAMBIO: Ya no necesitamos pasar la lista de '$users'
         return view('admin.encuestas.create', compact('categorias'));
     }
 
@@ -40,6 +70,7 @@ class EncuestaController extends Controller
      */
     public function store(Request $request)
     {
+        // <-- CAMBIO: Validación SÚPER SIMPLIFICADA
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -47,9 +78,8 @@ class EncuestaController extends Controller
             
             'preguntas' => 'required|array|min:1',
             'preguntas.*.texto' => 'required|string',
-            'preguntas.*.tipo' => 'required|in:multiple', // Solo permitimos 'multiple' ahora
-            'preguntas.*.opciones' => 'required|array|min:2', // Debe haber al menos 2 opciones
-            'preguntas.*.opciones.*' => 'required|string|max:255', // Cada opción debe ser string
+            'preguntas.*.tipo' => 'required|in:nominados', 
+            // <-- CAMBIO: La validación de 'opciones' ha sido ELIMINADA
             
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
@@ -58,16 +88,13 @@ class EncuestaController extends Controller
             'categoria_id.required' => 'Debes seleccionar una categoría',
             'preguntas.required' => 'Debes agregar al menos una pregunta',
             'preguntas.*.texto.required' => 'El texto de la pregunta es obligatorio',
-            'preguntas.*.opciones.min' => 'Cada pregunta debe tener al menos dos opciones de respuesta.',
-            'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio.',
         ]);
 
-        // Crear la encuesta
         $encuesta = Encuesta::create([
             'titulo' => $request->titulo,
             'descripcion' => $request->descripcion,
             'categoria_id' => $request->categoria_id,
-            'estado' => 1, // Por defecto ACTIVA
+            'estado' => 1, 
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
         ]);
@@ -77,10 +104,11 @@ class EncuestaController extends Controller
             Pregunta::create([
                 'encuesta_id' => $encuesta->id,
                 'texto' => $preguntaData['texto'],
-                'tipo' => 'multiple', // Forzamos el tipo a 'multiple'
+                'tipo' => $preguntaData['tipo'], 
                 'orden' => $index,
-                // GUARDA LAS OPCIONES COMO JSON
-                'opciones' => json_encode($preguntaData['opciones']), 
+                // <-- CAMBIO: Guardamos un JSON vacío o nulo.
+                // La lógica de votación cargará a todos los usuarios.
+                'opciones' => json_encode([]), 
             ]);
         }
 
@@ -106,7 +134,10 @@ class EncuestaController extends Controller
         
         $ultimaRespuesta = null;
         if ($totalRespuestas > 0) {
-            $ultimaRespuesta = $encuesta->preguntas->first()->respuestas->first()->created_at->format('d/m/Y');
+            $primeraPreguntaConRespuesta = $encuesta->preguntas->first(function($p) { return $p->respuestas->isNotEmpty(); });
+            if ($primeraPreguntaConRespuesta) {
+                $ultimaRespuesta = $primeraPreguntaConRespuesta->respuestas->sortByDesc('created_at')->first()->created_at->format('d/m/Y');
+            }
         }
 
         return view('admin.encuestas.show', compact('encuesta', 'totalRespuestas', 'promedioRespuestas', 'ultimaRespuesta'));
@@ -117,19 +148,13 @@ class EncuestaController extends Controller
      */
     public function edit($id)
     {
-        // Se añade 'opciones' al modelo Pregunta si existe el campo JSON, 
-        // y se decodifica para pasarlo a la vista si es necesario.
         $encuesta = Encuesta::with('preguntas')->findOrFail($id);
-        
-        // Decodificar el JSON de opciones para que la vista pueda iterar
-        if ($encuesta->preguntas->isNotEmpty()) {
-            foreach ($encuesta->preguntas as $pregunta) {
-                // Asumimos que el campo se llama 'opciones' y contiene un JSON string
-                $pregunta->opciones_array = json_decode($pregunta->opciones, true) ?? [];
-            }
-        }
+    
+        // <-- CAMBIO: Ya no necesitamos decodificar 'opciones_array'
+        // ni tampoco necesitamos pasar '$users'
         
         $categorias = Categoria::all();
+        
         return view('admin.encuestas.create', compact('encuesta', 'categorias'));
     }
 
@@ -140,6 +165,7 @@ class EncuestaController extends Controller
     {
         $encuesta = Encuesta::findOrFail($id);
 
+        // <-- CAMBIO: Validación SÚPER SIMPLIFICADA
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -147,9 +173,8 @@ class EncuestaController extends Controller
             
             'preguntas' => 'required|array|min:1',
             'preguntas.*.texto' => 'required|string',
-            'preguntas.*.tipo' => 'required|in:multiple', // Solo permitimos 'multiple' ahora
-            'preguntas.*.opciones' => 'required|array|min:2', // Debe haber al menos 2 opciones
-            'preguntas.*.opciones.*' => 'required|string|max:255',
+            'preguntas.*.tipo' => 'required|in:nominados', 
+            // <-- CAMBIO: La validación de 'opciones' ha sido ELIMINADA
             
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
@@ -171,10 +196,9 @@ class EncuestaController extends Controller
             Pregunta::create([
                 'encuesta_id' => $encuesta->id, 
                 'texto' => $preguntaData['texto'],
-                'tipo' => 'multiple', // Forzamos el tipo a 'multiple'
+                'tipo' => $preguntaData['tipo'],
                 'orden' => $index,
-                // GUARDA LAS OPCIONES COMO JSON
-                'opciones' => json_encode($preguntaData['opciones']),
+                'opciones' => json_encode([]), // <-- CAMBIO
             ]);
         }
 

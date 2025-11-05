@@ -9,6 +9,9 @@ class Respuesta extends Model
 {
     use HasFactory;
 
+    /**
+     * Asumimos que la tabla se llama 'respuestas'
+     */
     protected $table = 'respuestas';
 
     protected $fillable = [
@@ -18,18 +21,18 @@ class Respuesta extends Model
     ];
 
     /**
-     * Relación con pregunta
+     * Una Respuesta pertenece a una Pregunta
      */
     public function pregunta()
     {
-        return $this->belongsTo(Pregunta::class, 'pregunta_id');
+        return $this->belongsTo(Pregunta::class);
     }
 
     /**
-     * Relación con usuario
+     * Una Respuesta pertenece a un Usuario
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

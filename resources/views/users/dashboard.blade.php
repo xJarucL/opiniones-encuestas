@@ -62,9 +62,6 @@
         {{-- Encabezado de bienvenida --}}
         <div class="mb-8">
             <h1 class="text-4xl font-bold text-purple-700 mb-2">¡Bienvenido, {{ $usuario->nombres }}!</h1>
-            <p class="text-gray-600 text-lg">
-                Este es tu panel de usuario. Explora las opciones disponibles para ti.
-            </p>
         </div>
 
         {{-- Tarjetas de acceso rápido --}}
@@ -96,55 +93,21 @@
                 <p class="text-gray-600 text-sm">Explora perfiles y deja comentarios a otros usuarios</p>
             </a>
 
-            {{-- Tarjeta: Mis Comentarios --}}
-            <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 rounded-2xl shadow-lg text-white">
+            {{-- ====================================================== --}}
+            {{-- CORRECCIÓN: Apuntar a 'encuestas.index' (la ruta de usuario) --}}
+            {{-- ====================================================== --}}
+            <a href="{{ route('encuestas.index') }}" class="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-500">
                 <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition">
+                        <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                     </div>
-                    <h2 class="text-xl font-bold ml-3">Mis Comentarios</h2>
+                    <h2 class="text-xl font-bold text-gray-800 ml-3 group-hover:text-purple-600 transition">Responder Encuestas</h2>
                 </div>
-                <p class="text-purple-100 text-sm">Revisa todas tus opiniones y comentarios publicados</p>
-            </div>
-
-        </div>
-
-        {{-- Información de la cuenta --}}
-        <div class="bg-white rounded-2xl shadow-md p-8 border-l-4 border-purple-500">
-            <div class="flex items-center mb-6">
-                <svg class="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h3 class="text-2xl font-bold text-gray-800">Información de tu cuenta</h3>
-            </div>
+                <p class="text-gray-600 text-sm">Participa en las encuestas activas y da tu opinión.</p>
+            </a>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-purple-50 p-4 rounded-xl">
-                    <p class="text-sm font-medium text-purple-600 mb-1">Nombre de usuario</p>
-                    <p class="text-lg font-bold text-gray-800">{{ $usuario->username }}</p>
-                </div>
-                
-                <div class="bg-purple-50 p-4 rounded-xl">
-                    <p class="text-sm font-medium text-purple-600 mb-1">Correo electrónico</p>
-                    <p class="text-lg font-bold text-gray-800">{{ $usuario->email }}</p>
-                </div>
-                
-                <div class="bg-purple-50 p-4 rounded-xl">
-                    <p class="text-sm font-medium text-purple-600 mb-1">Nombre completo</p>
-                    <p class="text-lg font-bold text-gray-800">{{ $usuario->nombres }} {{ $usuario->ap_paterno }} {{ $usuario->ap_materno }}</p>
-                </div>
-                
-                <div class="bg-purple-50 p-4 rounded-xl">
-                    <p class="text-sm font-medium text-purple-600 mb-1">Tipo de usuario</p>
-                    <p class="text-lg font-bold text-gray-800">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-600 text-white">
-                            {{ $usuario->tipo_usuario->nombre_tipo ?? 'Usuario Normal' }}
-                        </span>
-                    </p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -157,3 +120,4 @@
 
 </body>
 </html>
+
