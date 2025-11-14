@@ -67,30 +67,43 @@ class PresentaciontwoController extends Controller
 
         $pregunta = $preguntas[$preguntaIndex];
 
-        $topRespuestas = DB::select("
-            SELECT 
-                r.texto AS opcion,
-                COUNT(r.id) AS total_votos,
-                ROUND(
-                    COUNT(r.id) * 100.0 / NULLIF(
-                        (SELECT COUNT(*) FROM respuestas r2 WHERE r2.pregunta_id = ?),
-                        0
-                    ), 2
-                ) AS porcentaje
-            FROM respuestas r
-            WHERE r.pregunta_id = ?
-            GROUP BY r.texto
-            ORDER BY total_votos DESC
-            LIMIT 3
-        ", [$pregunta->id, $pregunta->id]);
+        // Obtener el total de votos para esta pregunta
+        $totalVotos = DB::table('respuestas')
+            ->where('pregunta_id', $pregunta->id)
+            ->count();
+
+        // CORREGIDO: Usar el campo 'respuesta' en lugar de 'texto'
+        $topRespuestas = DB::table('respuestas')
+            ->select(
+                'respuesta',
+                DB::raw('COUNT(*) as total')
+            )
+            ->where('pregunta_id', $pregunta->id)
+            ->whereNotNull('respuesta')
+            ->where('respuesta', '!=', '')
+            ->groupBy('respuesta')
+            ->orderBy('total', 'DESC')
+            ->limit(3)
+            ->get();
+
+        // Calcular porcentajes y convertir a array
+        $resultados = $topRespuestas->map(function($item) use ($totalVotos) {
+            $item->porcentaje = $totalVotos > 0 
+                ? round(($item->total / $totalVotos) * 100, 2) 
+                : 0;
+            return $item;
+        })->values()->all();
 
         $hayMasPreguntas = ($preguntaIndex + 1) < $preguntas->count();
+
+        // DEBUG: Ver qué datos se están enviando (QUITAR DESPUÉS DE PROBAR)
+        dd($resultados);
 
         return view('users.podiotwo', compact(
             'encuestaId',
             'preguntaIndex',
             'pregunta',
-            'topRespuestas',
+            'resultados',
             'hayMasPreguntas'
         ));
     }
@@ -104,11 +117,12 @@ class PresentaciontwoController extends Controller
 
         $tituloEncuesta = $encuesta->titulo ?? 'Resultados';
 
+        // CORREGIDO: Usar el campo 'respuesta' en lugar de 'texto'
         $allResultados = DB::select("
             SELECT 
                 p.id AS pregunta_id,
                 p.texto AS pregunta,
-                r.texto AS opcion,
+                r.respuesta AS respuesta,
                 COUNT(r.id) AS total_votos,
                 ROUND(
                     COUNT(r.id) * 100.0 / NULLIF(
@@ -120,7 +134,7 @@ class PresentaciontwoController extends Controller
             FROM preguntas p
             LEFT JOIN respuestas r ON p.id = r.pregunta_id
             WHERE p.encuesta_id = ?
-            GROUP BY p.id, p.texto, r.texto
+            GROUP BY p.id, p.texto, r.respuesta
             ORDER BY p.id, total_votos DESC
         ", [$encuestaId]);
 

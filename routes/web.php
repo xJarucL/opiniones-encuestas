@@ -10,6 +10,7 @@ use App\Http\Controllers\PresentacionController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UsuarioMiddleware;
 use App\Http\Controllers\PresentaciontwoController;
+use App\Http\Controllers\DiagnosticoController; // ← AGREGADO
 use Illuminate\Support\Facades\Auth;
 
 // ==========================================================
@@ -44,26 +45,22 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])
 // ==========================================================
 Route::get('/presentacion/{preguntaId}', [PresentacionController::class, 'index'])->name('presentacion');
 
-// ==========================================================
-// ¡AÑADE ESTA LÍNEA!
-// Esta es la ruta POST para guardar el voto
-// ==========================================================
+// Ruta POST para guardar el voto
 Route::post('/presentacion/store', [PresentacionController::class, 'store'])->name('presentacion.store');
-
 
 Route::get('/podio/{preguntaId}', [PresentacionController::class, 'podio'])->name('podio');
 Route::get('/resultados/{preguntaId}', [PresentacionController::class, 'resultados'])->name('resultados');
 
 
 // ==========================================================
-// 2.5. RUTAS PARA TODOS LOS USUARIOS AUTENTICADOS (NUEVA SECCIÓN)
+// 2.5. RUTAS PARA TODOS LOS USUARIOS AUTENTICADOS
 // ==========================================================
 Route::middleware(['auth'])->group(function () {
 
     // LOGOUT
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     
-    // EDICIÓN DE PERFIL (Movidas desde el grupo de Admin)
+    // EDICIÓN DE PERFIL
     Route::get('/usuarios/editar/{id}', [UserController::class, 'edit'])->name('usuarios.edit');
     Route::put('/usuarios/actualizar/{id}', [UserController::class, 'guardarUsuario'])->name('usuarios.update');
 
@@ -88,6 +85,53 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('debug.user');
 
+    // RUTA DE PRUEBA PARA DIAGNÓSTICO DEL PODIO
+    Route::get('/test-podio/{encuestaId}/{preguntaIndex}', function($encuestaId, $preguntaIndex) {
+        $preguntas = DB::table('preguntas')
+            ->where('encuesta_id', $encuestaId)
+            ->orderBy('id')
+            ->get();
+        
+        if ($preguntas->isEmpty()) {
+            return response()->json([
+                'error' => 'No hay preguntas para esta encuesta',
+                'encuesta_id' => $encuestaId
+            ]);
+        }
+        
+        if (!isset($preguntas[$preguntaIndex])) {
+            return response()->json([
+                'error' => 'Índice de pregunta no válido',
+                'pregunta_index' => $preguntaIndex,
+                'total_preguntas' => $preguntas->count(),
+                'preguntas_disponibles' => $preguntas
+            ]);
+        }
+        
+        $pregunta = $preguntas[$preguntaIndex];
+        
+        $topRespuestas = DB::table('respuestas')
+            ->select(
+                'respuesta',
+                DB::raw('COUNT(*) as total')
+            )
+            ->where('pregunta_id', $pregunta->id)
+            ->whereNotNull('respuesta')
+            ->where('respuesta', '!=', '')
+            ->groupBy('respuesta')
+            ->orderBy('total', 'DESC')
+            ->limit(3)
+            ->get();
+        
+        return response()->json([
+            'pregunta_id' => $pregunta->id,
+            'pregunta_texto' => $pregunta->texto,
+            'total_preguntas_encuesta' => $preguntas->count(),
+            'total_respuestas' => $topRespuestas,
+            'count' => $topRespuestas->count()
+        ]);
+    });
+
     // Presentación normal
     Route::get('/presentacion/{preguntaId}', [PresentacionController::class, 'index'])->name('presentacion');
     Route::get('/podio/{preguntaId}', [PresentacionController::class, 'podio'])->name('podio');
@@ -95,7 +139,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Presentación de varias preguntas
     Route::get('/presentacionone/{encuestaId}', [PresentaciontwoController::class, 'index'])->name('presentacionone');
-    Route::get('/presentaciontwo/{encuestaId}/{preguntaIndex}', [PresentaciontwoController::class, 'inicio'])->name('presentaciontwo');
+    Route::get('/presentaciontwo/{encuestaId}/{preguntaIndex}', [PresentaciontwoController::class, 'inicio'])->name('presentaciontwo.inicio');
     Route::get('/podiotwo/{encuestaId}/{preguntaIndex}', [PresentaciontwoController::class, 'podio'])->name('podiotwo');
     Route::get('/resultadostwo/{encuestaId}', [PresentaciontwoController::class, 'resultados'])->name('resultadostwo');
 
@@ -169,6 +213,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
             Route::put('/{id}', [CategoriaController::class, 'update'])->name('update');
             Route::delete('/{id}', [CategoriaController::class, 'destroy'])->name('destroy');
         });
+
+        // HERRAMIENTAS DE DIAGNÓSTICO
+        Route::prefix('diagnostico')->name('diagnostico.')->group(function () {
+            Route::get('/{encuestaId}', [DiagnosticoController::class, 'diagnosticar'])->name('ver');
+            Route::post('/{encuestaId}/corregir', [DiagnosticoController::class, 'corregirRespuestasVacias'])->name('corregir');
+        });
     });
 
     // ---- ADMINISTRACIÓN DE USUARIOS ----
@@ -190,4 +240,3 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     });
 });
-
